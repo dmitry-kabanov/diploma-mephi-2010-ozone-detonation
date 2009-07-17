@@ -1,6 +1,8 @@
 #ifndef FUNC_INIT_H
 #define FUNC_INIT_H
 
+#include "real_number_type.h"
+
 void init_parameters(
     long double *x, long double *x_center,
     long double *m, long double *rho,
@@ -19,8 +21,7 @@ void init_parameters(
 void init_thermodynamic_parameters(
     long double *internal_energy, long double *energy,
     long double *temperature, long double *p, 
-    long double *rho, long double *u,
-    long double *rho_e
+    long double *rho, long double *u
 );
 
 /**
@@ -31,6 +32,20 @@ void init_thermodynamic_parameters(
  */
 void init_chemical_parameters(
     long double *w, long double *chemical_energy
+);
+
+/**
+ * «адает начальное распределение rho * energy.
+ * 
+ * internal_energy Ч внутренн€€ теплова€ энерги€
+ * chemical_energy Ч химическа€ энерги€
+ * rho             Ч плотность
+ * rho_e           Ч внутренн€ энерги€ на единицу объема.
+ */
+void init_rho_e(real_t *internal_energy,
+                real_t *chemical_energy,
+                real_t *rho,
+                real_t *rho_e
 );
 
 void init_additional_parameters(

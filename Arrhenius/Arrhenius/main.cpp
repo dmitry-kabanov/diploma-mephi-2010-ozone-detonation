@@ -86,6 +86,10 @@ int main(int argc, char *argv[])
     char file_ext[5] = ".txt";
     char fullname[64];
 
+    std::ofstream out_front("sw_front.txt");
+    out_front.setf(std::ios::fixed, std::ios::floatfield);
+    out_front.precision(6);
+
     // »нициализаци€ массивов.
     for (i = 0; i <= N; i++) {
         cells_numbers[i] = i;
@@ -95,20 +99,20 @@ int main(int argc, char *argv[])
     init_thermodynamic_parameters(
         internal_energy, e, 
         temperature, p, 
-        rho, u, 
-        rho_e
+        rho, u
     );
     init_chemical_parameters(w, chemical_energy);
+    init_rho_e(internal_energy, chemical_energy, rho, rho_e);
     init_additional_parameters(p_contact, u_contact, 
-        delta_impulse, delta_energy,
-        p, u);
-    init_boundary_parameters(
-        rho_bound_r, rho_bound_l,
-        rho_u_bound_r, rho_u_bound_l,
-        rho_e_bound_r, rho_e_bound_l,
-        u_bound_r, u_bound_l,
-        e_bound_r, e_bound_l,
-        p_bound_r, p_bound_l
+                               delta_impulse, delta_energy,
+                               p, u
+    );
+    init_boundary_parameters(rho_bound_r, rho_bound_l,
+                             rho_u_bound_r, rho_u_bound_l,
+                             rho_e_bound_r, rho_e_bound_l,
+                             u_bound_r, u_bound_l,
+                             e_bound_r, e_bound_l,
+                             p_bound_r, p_bound_l
     );
     init_tangents(
         rho_tg_left, rho_tg_right, rho_tg,
@@ -202,12 +206,8 @@ int main(int argc, char *argv[])
             e_bound_l[i] = rho_e_bound_l[i] / rho_bound_l[i];
 
             // —читаем p на левой и правой границах €чейки.
-            p_bound_r[i] = rho_bound_r[i] * (GAMMA - 1) *
-                (e_bound_r[i] - pow(u_bound_r[i], 2) / 2.0 + 
-                chemical_energy[i]);
-            p_bound_l[i] = rho_bound_l[i] * (GAMMA - 1) *
-                (e_bound_l[i] - pow(u_bound_l[i], 2) / 2.0 + 
-                chemical_energy[i]);
+            p_bound_r[i] = rho_bound_r[i] * (GAMMA - 1) * e_bound_r[i];
+            p_bound_l[i] = rho_bound_l[i] * (GAMMA - 1) * e_bound_l[i];
             
             if (shock_wave_front[i] == true && shock_wave_front[i+1] == false)
             {
@@ -387,7 +387,7 @@ int main(int argc, char *argv[])
             p[i] = rho[i] * (GAMMA - 1) * 
                 (internal_energy[i] + chemical_energy[i]);
             rho_u[i] = rho[i] * u[i];
-            rho_e[i] = rho[i] * e[i];
+            rho_e[i] = rho[i] * (internal_energy[i] + chemical_energy[i]);
         }
 
         for (i = 1; i < (N-1); i++) {
@@ -434,6 +434,13 @@ int main(int argc, char *argv[])
             }
         }
 
+        for (i = 1; i < N; i++) {
+            if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
+                out_front << (j * DT) << " " << p[i] << "\n";
+                break;
+            }
+        }
+
         if (j % TIMEDIVISOR == 0) {
             num_digits = sprintf_s(str_time, "%d", j);
             strcpy_s(fullname, filename);
@@ -445,7 +452,15 @@ int main(int argc, char *argv[])
             out.precision(6);
             
             output(
-                out, cells_numbers, x, p, u, w, shock_wave_front
+                out, cells_numbers, 
+                x, p, 
+                u, w, 
+                rho, e,
+                internal_energy, chemical_energy,
+                p_bound_l, p_bound_r,
+                rho_bound_l, rho_bound_r,
+                u_bound_l, u_bound_r,
+                shock_wave_front
             );
             
             out.close();

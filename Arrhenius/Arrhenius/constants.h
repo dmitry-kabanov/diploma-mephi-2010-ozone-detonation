@@ -1,22 +1,22 @@
 #ifndef CONSTANTS_H
 #define CONSTANTS_H
 
-#include <math.h>
+#include <cmath>
 
 const long double
-    DX1 = 0.385,                 // ширина €чейки в  ¬ƒ, м
-    DX2 = 0.385,                 // ширина €чейки в  Ќƒ, м
-    DT  = 0.00385,             // шаг по времени, с
+    DX1 = 0.35,                 // ширина €чейки в  ¬ƒ, м
+    DX2 = 0.35,                 // ширина €чейки в  Ќƒ, м
+    DT  = 0.0035,             // шаг по времени, с
     
 
-    P1 = 42.06,
+    P1 = 67.345,
 	P2 =  1.0,               // давление в  Ќƒ, ѕа
 
-    RHO1 = 1 / 0.11443,
+    RHO1 = 9.468,
     RHO2 = 1.0,               // плотность в  Ќƒ
     V2   = 1.0 / RHO2,        // начальный объем
 
-    U1   = 5.915,
+    U1   = 7.703,
     U2   = 0.0,
 
     U_PISTON = 3.015,    // —корость поршн€.
@@ -39,7 +39,7 @@ const long double
  
     ACTIVATION_ENERGY = 50.0,
 
-    Z = 82.5,
+    Z = 206.0,
     K = 0.5;                   // используетс€ дл€ определени€ ширины €чейки,
                                // лева€ граница которой совпадает 
                               // с ударной волной
@@ -56,7 +56,7 @@ const int CONFIG_VACUUM                       = 4;
 
 const long double EPSILON = 1e-10;
 
-const int TIMESTEPS = 20000;
+const int TIMESTEPS = 1000;
 const int TIMEDIVISOR = 5000;
 
 #endif

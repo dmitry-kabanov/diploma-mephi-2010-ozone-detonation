@@ -1,4 +1,5 @@
-#include <math.h>
+#include <cmath>
+#include "real_number_type.h"
 #include "constants.h"
 
 void init_parameters(
@@ -56,25 +57,18 @@ void init_parameters(
 void init_thermodynamic_parameters(
     long double *internal_energy, long double *energy,
     long double *temperature, long double *p, 
-    long double *rho, long double *u,
-    long double *rho_e)
+    long double *rho, long double *u)
 {
-    for (int i = 0; i <= N; i++) {
-        if (i == 0) {
-            internal_energy[i] = 0.0;
-            energy[i]          = 0.0;
-            temperature[i]     = 0.0;
-            rho_e[i]           = 0.0;
-            continue;
-        }
+    internal_energy[0] = 0.0;
+    energy[0]          = 0.0;
+    temperature[0]     = 0.0;
 
+    for (int i = 1; i <= N; i++) {
         internal_energy[i] = p[i] / ((GAMMA - 1) * rho[i]);
         energy[i]          = internal_energy[i] + pow(u[i], 2) / 2.0;
         temperature[i]     = internal_energy[i] / CV;
-
-        rho_e[i] = rho[i] * energy[i];
     }
-} // void init_thermodynamic_parameters
+}
 
 void init_chemical_parameters(long double *w, long double *chemical_energy)
 {
@@ -85,7 +79,19 @@ void init_chemical_parameters(long double *w, long double *chemical_energy)
         w[i] = 1.0;
         chemical_energy[i] = (1 - w[i]) * Q;
     }
-} // void init_chemical_parameters(long double *, long double *)
+}
+
+void init_rho_e(real_t *internal_energy, 
+                real_t *chemical_energy, 
+                real_t *rho,
+                real_t *rho_e)
+{
+    rho_e[0] = 0.0;
+
+    for (int i = 1; i <= N; i++) {
+        rho_e[i] = rho[i] * (internal_energy[i] + chemical_energy[i]);
+    }
+}
 
 void init_additional_parameters(
     long double *p_contact, long double *u_contact,
