@@ -36,15 +36,17 @@ const long double
     D_C_J = sqrt((GAMMA * GAMMA - 1) * Q / 2.0 + GAMMA * P2 / RHO2) + 
         sqrt((GAMMA * GAMMA - 1) * Q / 2.0),              // —корость в точке „епмена-∆уге
 
+    F = 1.6,                    // F = (D / D_C_J)^2
+
  
     ACTIVATION_ENERGY = 50.0,
 
-    Z = 206.0,
+    Z = 206,
     K = 0.5;                   // используетс€ дл€ определени€ ширины €чейки,
                                // лева€ граница которой совпадает 
                               // с ударной волной
 
-const int N = 3000,             // число €чеек
+const int N = 4000,             // число €чеек
 L = 3;
 
 const bool EXACT_RIEMANN_SOLVER = true;
@@ -56,7 +58,7 @@ const int CONFIG_VACUUM                       = 4;
 
 const long double EPSILON = 1e-10;
 
-const int TIMESTEPS = 1000;
+const int TIMESTEPS = 50000;
 const int TIMEDIVISOR = 5000;
 
 #endif

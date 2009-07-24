@@ -287,7 +287,7 @@ int main(int argc, char *argv[])
          * Ќа левой границе у нас находитс€ поршень.
          * —читаем параметры дл€ поршн€.
          */
-        calc_piston(piston, w[1]);
+        calc_piston(piston, w[1], sqrt(F) * D_C_J);
         p_contact[0] = p[1];
         // Ћева€ граница области расчета движетс€ со скоростью поршн€.
         u_contact[0] = piston[1];
