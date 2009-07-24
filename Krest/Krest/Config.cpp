@@ -20,7 +20,7 @@ Config::Config()
     l2    = 1.0;
     n2    = 100;
     dx    = 1.0;
-    dt    = 0.000005;
-    timesteps = 300;
+    dt    = 0.00005;
+    timesteps = 1500;
     r     = 8314.0;
 }
