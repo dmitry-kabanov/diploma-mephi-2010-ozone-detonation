@@ -1,3 +1,12 @@
+/**
+ * @file
+ * @author Кабанов Дмитрий <kabanovdmitry@gmail.com>
+ * @version
+ * 
+ * @section DESCRIPTION
+ * 
+ * Реализация функции in_time_array(int j)
+ */
 #include "func_in_time_array.h"
 
 bool in_time_array(int j)

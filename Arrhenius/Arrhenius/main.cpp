@@ -1,8 +1,16 @@
-#include <stdio.h>
-#include <math.h>
+/**
+ * @file
+ * @author Кабанов Дмитрий <kabanovdmitry@gmail.com
+ * @version
+ *
+ * @section DESCRIPTION
+ *
+ * Главный файл проекта Arrhenius.
+ */
+#include <cstdio>
+#include <cmath.h>
 #include <iostream>
 #include <fstream>
-#include "real_number_type.h"
 #include "constants.h"
 #include "func_init.h"
 #include "func_delta.h"
@@ -12,6 +20,7 @@
 #include "func_piston.h"
 #include "func_output.h"
 #include "func_in_time_array.h"
+#include "real_number_type.h"
 
 int main(int argc, char *argv[])
 {
