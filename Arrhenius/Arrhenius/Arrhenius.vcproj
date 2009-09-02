@@ -179,6 +179,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\func_in_time_array.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\func_init.cpp"
 				>
 			</File>
@@ -218,6 +222,10 @@
 			</File>
 			<File
 				RelativePath=".\func_delta.h"
+				>
+			</File>
+			<File
+				RelativePath=".\func_in_time_array.h"
 				>
 			</File>
 			<File

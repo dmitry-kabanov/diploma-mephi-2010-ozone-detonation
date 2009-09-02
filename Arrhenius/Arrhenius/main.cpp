@@ -11,6 +11,7 @@
 #include "func_chemical_kinetics.h"
 #include "func_piston.h"
 #include "func_output.h"
+#include "func_in_time_array.h"
 
 int main(int argc, char *argv[])
 {
@@ -448,7 +449,7 @@ int main(int argc, char *argv[])
             }
         }
 
-        if (j % TIMEDIVISOR == 0) {
+        if (j % TIMEDIVISOR == 0 || in_time_array(j)) {
             num_digits = sprintf_s(str_time, "%d", j);
             strcpy_s(fullname, filename);
             strcat_s(fullname, str_time);
