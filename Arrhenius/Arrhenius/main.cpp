@@ -435,9 +435,16 @@ int main(int argc, char *argv[])
         }
 
         for (i = 1; i < N; i++) {
-            if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
-                out_front << (j * DT) << " " << p[i] << "\n";
-                break;
+            /**
+             * TODO: убрать магическое число 100.
+             */
+            if (i % 10 == 0) {
+                if (shock_wave_front[i] == true 
+                    && shock_wave_front[i+1] == true)
+                {
+                    out_front << (j * DT) << " " << p[i] << "\n";
+                    break;
+                }
             }
         }
 

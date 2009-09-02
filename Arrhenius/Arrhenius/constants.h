@@ -4,19 +4,19 @@
 #include <cmath>
 
 const long double
-    DX1 = 0.35,                 // ширина €чейки в  ¬ƒ, м
-    DX2 = 0.35,                 // ширина €чейки в  Ќƒ, м
-    DT  = 0.0035,             // шаг по времени, с
+    DX1 = 0.272,                 // ширина €чейки в  ¬ƒ, м
+    DX2 = 0.272,                 // ширина €чейки в  Ќƒ, м
+    DT  = 0.00272,             // шаг по времени, с
     
 
-    P1 = 67.345,
+    P1 = 42.06,
 	P2 =  1.0,               // давление в  Ќƒ, ѕа
 
-    RHO1 = 9.468,
+    RHO1 = 8.738,
     RHO2 = 1.0,               // плотность в  Ќƒ
     V2   = 1.0 / RHO2,        // начальный объем
 
-    U1   = 7.703,
+    U1   = 6.03,
     U2   = 0.0,
 
     U_PISTON = 3.015,    // —корость поршн€.
@@ -36,12 +36,12 @@ const long double
     D_C_J = sqrt((GAMMA * GAMMA - 1) * Q / 2.0 + GAMMA * P2 / RHO2) + 
         sqrt((GAMMA * GAMMA - 1) * Q / 2.0),              // —корость в точке „епмена-∆уге
 
-    F = 1.6,                    // F = (D / D_C_J)^2
+    F = 1.0,                    // F = (D / D_C_J)^2
 
  
-    ACTIVATION_ENERGY = 50.0,
+    ACTIVATION_ENERGY = 40.0,
 
-    Z = 206,
+    Z = 430.88,
     K = 0.5;                   // используетс€ дл€ определени€ ширины €чейки,
                                // лева€ граница которой совпадает 
                               // с ударной волной
@@ -49,6 +49,9 @@ const long double
 const int N = 4000,             // число €чеек
 L = 3;
 
+/**
+ * TODO: разобратьс€ с этими константами.
+ */
 const bool EXACT_RIEMANN_SOLVER = true;
 
 const int CONFIG_SHOCK_WAVES                  = 1;
@@ -58,7 +61,7 @@ const int CONFIG_VACUUM                       = 4;
 
 const long double EPSILON = 1e-10;
 
-const int TIMESTEPS = 50000;
+const int TIMESTEPS = 30000;
 const int TIMEDIVISOR = 5000;
 
 #endif
