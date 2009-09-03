@@ -1,0 +1,24 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OzoneKinetics", "OzoneKinetics\OzoneKinetics.vcproj", "{F9F2D0AF-8EA6-43B5-95D7-5DEB34A26628}"
+EndProject
+Global
+	GlobalSection(SubversionScc) = preSolution
+		Svn-Managed = True
+		Manager = AnkhSVN - Subversion Support for Visual Studio
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{F9F2D0AF-8EA6-43B5-95D7-5DEB34A26628}.Debug|Win32.ActiveCfg = Debug|Win32
+		{F9F2D0AF-8EA6-43B5-95D7-5DEB34A26628}.Debug|Win32.Build.0 = Debug|Win32
+		{F9F2D0AF-8EA6-43B5-95D7-5DEB34A26628}.Release|Win32.ActiveCfg = Release|Win32
+		{F9F2D0AF-8EA6-43B5-95D7-5DEB34A26628}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
