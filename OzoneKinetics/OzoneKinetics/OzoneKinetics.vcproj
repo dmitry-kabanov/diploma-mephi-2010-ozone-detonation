@@ -171,7 +171,27 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\Elements.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\Mixture.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ReactionDataVar.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\RungeKuttaMethod.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\ThermDataVar.cpp"
 				>
 			</File>
 		</Filter>
@@ -181,15 +201,27 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\real_t.h"
+				RelativePath=".\Elements.h"
 				>
 			</File>
 			<File
-				RelativePath=".\rightSideForO.h"
+				RelativePath=".\Mixture.h"
 				>
 			</File>
 			<File
-				RelativePath=".\rightSideForO3.h"
+				RelativePath=".\ReactionDataVar.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RealType.h"
+				>
+			</File>
+			<File
+				RelativePath=".\RungeKuttaMethod.h"
+				>
+			</File>
+			<File
+				RelativePath=".\ThermDataVar.h"
 				>
 			</File>
 		</Filter>
@@ -199,6 +231,14 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 		</Filter>
+		<File
+			RelativePath=".\Reactions.txt"
+			>
+		</File>
+		<File
+			RelativePath=".\Substances.txt"
+			>
+		</File>
 	</Files>
 	<Globals>
 	</Globals>
