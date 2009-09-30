@@ -171,10 +171,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath=".\Elements.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -183,7 +179,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ReactionDataVar.cpp"
+				RelativePath=".\Reaction.cpp"
 				>
 			</File>
 			<File
@@ -191,7 +187,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ThermDataVar.cpp"
+				RelativePath=".\Substance.cpp"
 				>
 			</File>
 		</Filter>
@@ -201,15 +197,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath=".\Elements.h"
-				>
-			</File>
-			<File
 				RelativePath=".\Mixture.h"
 				>
 			</File>
 			<File
-				RelativePath=".\ReactionDataVar.h"
+				RelativePath=".\Reaction.h"
 				>
 			</File>
 			<File
@@ -221,7 +213,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\ThermDataVar.h"
+				RelativePath=".\Substance.h"
 				>
 			</File>
 		</Filter>
