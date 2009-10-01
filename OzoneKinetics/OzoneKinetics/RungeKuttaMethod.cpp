@@ -8,9 +8,10 @@ RungeKuttaMethod::RungeKuttaMethod(RealType p0, RealType t0,
                                    const char *fileOfReactions,
                                    const char *fileOfVolumeFractions)
 {
-    h = 1.0e-13;
+    h = 1.0e-12;
     time = 0.0;
-    fullTime = 15000;
+    fullTime = 150000;
+    timeStepForOutput = 500;
     mixture = new Mixture(p0, t0, 
                           fileOfSubstances,
                           fileOfReactions,
@@ -100,11 +101,11 @@ void RungeKuttaMethod::performIntegration()
             (q1 + 2 * q2 + 2 * q3 + q4) / 6.0;
         mixture->concentrations[1] = mixture->concentrations[1] + h *
             (r1 + 2 * r2 + 2 * r3 + r4) / 6.0;
-        //mixture->concentrations[1] = (mixture->initialConcentrations[0] -
-        //    mixture->concentrations[0] + 3 * mixture->initialConcentrations[2] -
-        //    3 * mixture->concentrations[2] + 
-        //    2 * mixture->initialConcentrations[1]) / 
-        //    2.0;
+        mixture->concentrations[1] = (mixture->initialConcentrations[0] -
+            mixture->concentrations[0] + 3 * mixture->initialConcentrations[2] -
+            3 * mixture->concentrations[2] + 
+            2 * mixture->initialConcentrations[1]) / 
+            2.0;
 
         //mixture->concentrations[1] = mixture->concentrations[1] + 
         //    (-rightSideForO3(time, mixture->concentrations[0],
@@ -116,18 +117,20 @@ void RungeKuttaMethod::performIntegration()
         //mixture->concentrations[1] = mixture->concentrations[1] + 
         //    (-k1 - q1) * 0.5 * h;
         
+        mixture->assertConcentrationsArePositive();
+
         mixture->molecularWeight = mixture->calculateMolecularWeight();
         mixture->volume = mixture->calculateMixtureVolume();
         mixture->temperature = mixture->calculateTemperature();
 
         time += h;
 
-        //h = alpha * abs(mixture->concentrations[0]) / rightSideForO(time,
-        //    mixture->concentrations[0],
-        //    mixture->concentrations[2],
-        //    mixture->concentrations[1]);
+        h = alpha * abs(mixture->concentrations[0]) / rightSideForO(time,
+            mixture->concentrations[0],
+            mixture->concentrations[2],
+            mixture->concentrations[1]);
 
-        if (i % 100 == 0) {
+        if (i % timeStepForOutput == 0) {
             printToFile();
         }
     }
@@ -180,7 +183,7 @@ RealType RungeKuttaMethod::rightSideForO3(RealType t,
     RealType k2r = calculateRateForBackReaction(1, k2f);
 
     m1 = -k1f * concOfO * concOfO3 + k1r * concOfO2 * concOfO2;
-    m2 = -k2f * concOfM * concOfO3 + k2r * concOfO2 * concOfO3 * concOfM;
+    m2 = -k2f * concOfM * concOfO3 + k2r * concOfO2 * concOfO * concOfM;
 
     return m1 + m2;
 }
@@ -231,6 +234,9 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
     RealType t = mixture->temperature;
     // Тепловой эффект реакции.
     RealType q = 0.0;
+    RealType multProducts = 1.0;
+    RealType multReagents = 1.0;
+    int substanceNumber;
     int nMoles = 0;
 
     RealType *gibbs_energies = new RealType[mixture->nSubstances];
@@ -242,20 +248,24 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
     delete [] gibbs_energies;
 
     for (int j = 0; j < mixture->reactions[i].nProducts; j++) {
+        substanceNumber = mixture->reactions[i].products[j];
         // Проверяем, что вещество не является веществом "М".
-        if (mixture->reactions[i].products[j] == -1) {
+        if (substanceNumber == -1) {
             continue;
         }
-        q += mixture->GibbsCalc_ext(mixture->reactions[i].products[j], t);
+        multProducts *= mixture->concentrations[substanceNumber];
+        q += mixture->GibbsCalc_ext(substanceNumber, t);
         nMoles++;
     }
 
     for (int j = 0; j < mixture->reactions[i].nReagents; j++) {
+        substanceNumber = mixture->reactions[i].products[j];
         // Проверяем, что вещество не является веществом "М".
-        if (mixture->reactions[i].reagents[j] == -1) {
+        if (substanceNumber == -1) {
             continue;
         }
-        q -= mixture->GibbsCalc_ext(mixture->reactions[i].reagents[j], t);
+        multReagents *= mixture->concentrations[substanceNumber];
+        q -= mixture->GibbsCalc_ext(substanceNumber, t);
         nMoles--;
     }
 
@@ -263,6 +273,14 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
     RealType kp;
     kp  = exp(-q / (mixture->R_J_OVER_MOL_K * t));
     kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
+
+    //if (multProducts != 0.0) {
+    //    kp  = exp(-q / (mixture->R_J_OVER_MOL_K * t));
+    //    kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
+    //}
+    //else {
+    //    kp = 1.0;
+    //}
 
     return kf / kp;
 }

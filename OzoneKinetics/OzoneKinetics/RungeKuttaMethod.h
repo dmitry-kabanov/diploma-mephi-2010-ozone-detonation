@@ -36,6 +36,7 @@ private:
     RealType h;
     Mixture *mixture;
     int fullTime;
+    int timeStepForOutput;
     RealType time;
     std::ofstream outputFile;
     void printToFile();

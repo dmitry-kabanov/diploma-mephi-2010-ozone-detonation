@@ -182,6 +182,7 @@ public:
     RealType calculateMixtureCp(RealType t);
     RealType calculateEntropy(int i);
     RealType calculateMixtureVolume();
+    void assertConcentrationsArePositive();
 };
 
 #endif

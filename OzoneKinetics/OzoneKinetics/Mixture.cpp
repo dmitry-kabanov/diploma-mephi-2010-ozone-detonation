@@ -586,3 +586,22 @@ RealType Mixture::calculateMixtureVolume()
     return 1.0 / rho;
 
 }
+
+void Mixture::assertConcentrationsArePositive()
+{
+    bool isPositive = true;
+    int i;
+
+    for (i = 0; i < nSubstances; i++) {
+        if (concentrations[i] < 0) {
+            isPositive = false;
+            break;
+        }
+    }
+
+    if (isPositive == false) {
+        cout << "Concentration of substance " << i << 
+            " became negative." << endl;
+        exit(-1);
+    }
+}
