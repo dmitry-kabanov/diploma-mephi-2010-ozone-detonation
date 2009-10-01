@@ -11,7 +11,11 @@
 class RungeKuttaMethod
 {
 public:
-    RungeKuttaMethod(RealType p0, RealType t0,
+    RungeKuttaMethod(RealType    initialPressure,
+                     RealType    initialTemperature,
+                     RealType    initialTimeStep,
+                     int         aFullTime,
+                     int         aTimeStepForOutput,
                      const char *fileOfSubstances,
                      const char *fileOfReactions,
                      const char *fileOfVolumeFractions);
@@ -32,7 +36,7 @@ private:
                            RealType concOfO3, 
                            RealType concOfO2);
     RealType calculateRateForForwardReaction(int i);
-    RealType calculateRateForBackReaction(int i, RealType kf);
+    RealType calculateRateForBackReaction(int i, RealType kf, RealType *conc);
     RealType h;
     Mixture *mixture;
     int fullTime;

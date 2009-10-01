@@ -1,18 +1,23 @@
-#include "RungeKuttaMethod.h"
 #include <iostream>
 #include <cmath>
+#include "RungeKuttaMethod.h"
 using namespace std;
 
-RungeKuttaMethod::RungeKuttaMethod(RealType p0, RealType t0, 
-                                   const char *fileOfSubstances,
-                                   const char *fileOfReactions,
+RungeKuttaMethod::RungeKuttaMethod(RealType    initialPressure, 
+                                   RealType    initialTemperature, 
+                                   RealType    initialTimeStep, 
+                                   int         aFullTime, 
+                                   int         aTimeStepForOutput, 
+                                   const char *fileOfSubstances, 
+                                   const char *fileOfReactions, 
                                    const char *fileOfVolumeFractions)
 {
-    h = 1.0e-12;
+    h = initialTimeStep;
     time = 0.0;
-    fullTime = 150000;
-    timeStepForOutput = 500;
-    mixture = new Mixture(p0, t0, 
+    fullTime = aFullTime;
+    timeStepForOutput = aTimeStepForOutput;
+    mixture = new Mixture(initialPressure, 
+                          initialTemperature, 
                           fileOfSubstances,
                           fileOfReactions,
                           fileOfVolumeFractions
@@ -32,7 +37,7 @@ RungeKuttaMethod::~RungeKuttaMethod()
 void RungeKuttaMethod::performIntegration()
 {
     // Относительное изменение концентрации O за один временной шаг.
-    RealType alpha = 0.01;
+    RealType alpha = 0.005;
     RealType k1, k2, k3, k4;
     RealType q1, q2, q3, q4;
     RealType r1, r2, r3, r4;
@@ -95,17 +100,14 @@ void RungeKuttaMethod::performIntegration()
             mixture->concentrations[2] + h * q3, 
             mixture->concentrations[1] + h * r3);
 
-        mixture->concentrations[0] = mixture->concentrations[0] + h * 
-            (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
-        mixture->concentrations[2] = mixture->concentrations[2] + h * 
-            (q1 + 2 * q2 + 2 * q3 + q4) / 6.0;
-        mixture->concentrations[1] = mixture->concentrations[1] + h *
-            (r1 + 2 * r2 + 2 * r3 + r4) / 6.0;
-        mixture->concentrations[1] = (mixture->initialConcentrations[0] -
-            mixture->concentrations[0] + 3 * mixture->initialConcentrations[2] -
-            3 * mixture->concentrations[2] + 
-            2 * mixture->initialConcentrations[1]) / 
-            2.0;
+        mixture->concentrations[0] += h * (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
+        mixture->concentrations[2] += h * (q1 + 2 * q2 + 2 * q3 + q4) / 6.0;
+        mixture->concentrations[1] += h * (r1 + 2 * r2 + 2 * r3 + r4) / 6.0;
+        //mixture->concentrations[1] = (mixture->initialConcentrations[0] -
+        //    mixture->concentrations[0] + 3 * mixture->initialConcentrations[2] -
+        //    3 * mixture->concentrations[2] + 
+        //    2 * mixture->initialConcentrations[1]) / 
+        //    2.0;
 
         //mixture->concentrations[1] = mixture->concentrations[1] + 
         //    (-rightSideForO3(time, mixture->concentrations[0],
@@ -117,6 +119,7 @@ void RungeKuttaMethod::performIntegration()
         //mixture->concentrations[1] = mixture->concentrations[1] + 
         //    (-k1 - q1) * 0.5 * h;
         
+        cout << i << endl;
         mixture->assertConcentrationsArePositive();
 
         mixture->molecularWeight = mixture->calculateMolecularWeight();
@@ -125,10 +128,10 @@ void RungeKuttaMethod::performIntegration()
 
         time += h;
 
-        h = alpha * abs(mixture->concentrations[0]) / rightSideForO(time,
-            mixture->concentrations[0],
-            mixture->concentrations[2],
-            mixture->concentrations[1]);
+        //h = alpha * abs(mixture->concentrations[0] / rightSideForO(time,
+        //    mixture->concentrations[0],
+        //    mixture->concentrations[2],
+        //    mixture->concentrations[1]));
 
         if (i % timeStepForOutput == 0) {
             printToFile();
@@ -142,6 +145,7 @@ RealType RungeKuttaMethod::rightSideForO(RealType t,
                                          RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
+    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -151,9 +155,9 @@ RealType RungeKuttaMethod::rightSideForO(RealType t,
     RealType k2f = calculateRateForForwardReaction(1);
     RealType k3f = calculateRateForForwardReaction(2);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f);
-    RealType k2r = calculateRateForBackReaction(1, k2f);
-    RealType k3r = calculateRateForBackReaction(2, k3f);
+    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
+    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
+    RealType k3r = calculateRateForBackReaction(2, k3f, conc);
 
     RealType skor1 = k1f * concOfO * concOfO3;
     RealType skor2m = k2f * concOfM * concOfO3;
@@ -172,6 +176,7 @@ RealType RungeKuttaMethod::rightSideForO3(RealType t,
                                           RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
+    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -179,8 +184,8 @@ RealType RungeKuttaMethod::rightSideForO3(RealType t,
     RealType k1f = calculateRateForForwardReaction(0);
     RealType k2f = calculateRateForForwardReaction(1);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f);
-    RealType k2r = calculateRateForBackReaction(1, k2f);
+    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
+    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
 
     m1 = -k1f * concOfO * concOfO3 + k1r * concOfO2 * concOfO2;
     m2 = -k2f * concOfM * concOfO3 + k2r * concOfO2 * concOfO * concOfM;
@@ -194,6 +199,7 @@ RealType RungeKuttaMethod::rightSideForO2(RealType t,
                                          RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
+    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -203,9 +209,9 @@ RealType RungeKuttaMethod::rightSideForO2(RealType t,
     RealType k2f = calculateRateForForwardReaction(1);
     RealType k3f = calculateRateForForwardReaction(2);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f);
-    RealType k2r = calculateRateForBackReaction(1, k2f);
-    RealType k3r = calculateRateForBackReaction(2, k3f);
+    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
+    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
+    RealType k3r = calculateRateForBackReaction(2, k3f, conc);
 
     m1 = 2 * k1f * concOfO * concOfO3 - 2 * k1r * concOfO2 * concOfO2;
     m2 = k2f * concOfM * concOfO3 - k2r * concOfO2 * concOfO * concOfM;
@@ -229,7 +235,7 @@ RealType RungeKuttaMethod::calculateRateForForwardReaction(int i)
     return k;
 }
 
-RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
+RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, RealType *conc)
 {
     RealType t = mixture->temperature;
     // Тепловой эффект реакции.
@@ -253,18 +259,18 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
         if (substanceNumber == -1) {
             continue;
         }
-        multProducts *= mixture->concentrations[substanceNumber];
+        multProducts *= conc[substanceNumber];
         q += mixture->GibbsCalc_ext(substanceNumber, t);
         nMoles++;
     }
 
     for (int j = 0; j < mixture->reactions[i].nReagents; j++) {
-        substanceNumber = mixture->reactions[i].products[j];
+        substanceNumber = mixture->reactions[i].reagents[j];
         // Проверяем, что вещество не является веществом "М".
         if (substanceNumber == -1) {
             continue;
         }
-        multReagents *= mixture->concentrations[substanceNumber];
+        multReagents *= conc[substanceNumber];
         q -= mixture->GibbsCalc_ext(substanceNumber, t);
         nMoles--;
     }
@@ -304,6 +310,6 @@ void RungeKuttaMethod::printToFile()
 
 void RungeKuttaMethod::printHeadingToFile()
 {
-    outputFile << "t (s)\tO2\tO3\tO\tN (cm3)\tH (J/g)\t\tT (K)\t\t";
+    outputFile << "t (s)\tO2\tO3\tO\tN (1/cm3)\tH (J/g)\t\tT (K)\t\t";
     outputFile << "Mu (g/mole)\t\tRho (g/cm3)" << endl;
 }

@@ -224,6 +224,10 @@
 			>
 		</Filter>
 		<File
+			RelativePath=".\Config.txt"
+			>
+		</File>
+		<File
 			RelativePath=".\Reactions.txt"
 			>
 		</File>

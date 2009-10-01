@@ -576,7 +576,7 @@ RealType Mixture::calculateEntropy(int i)
 RealType Mixture::calculateMixtureVolume()
 {
     RealType sumConc = 0.0;
-    RealType rho       = 0.0;
+    RealType rho     = 0.0;
     
     for (int i = 0; i < nSubstances; i++) {
         sumConc += substances[i]->molecularWeight * concentrations[i];
