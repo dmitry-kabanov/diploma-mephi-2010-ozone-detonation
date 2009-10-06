@@ -1,3 +1,13 @@
+/**
+* @file
+*
+* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @version %I%
+*
+* @section DESCRIPTION
+*
+* Реализация класса Mixture.
+*/
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -31,7 +41,6 @@ Mixture::Mixture(RealType p0, RealType t0,
     RealType densityKmoleOverM3 = p0 / (t0 * R_J_OVER_KMOL_K); // кмоль / м**3
     volume = 1.0 / densityMixture;
     fullEnergy = calculateFullEnergy(p0, volume); // Дж / кг
-    //fullEnergy = calculateFullEnthalpy(p0, volume); // Дж/кг
 
     for (int i = 0; i < nSubstances; i++) {
         concentrations[i] = 1.0e-3 * densityKmoleOverM3 * 
@@ -91,7 +100,7 @@ void Mixture::readFileOfReactions(const char *filename)
     for (int i = 0; i < nReactions; i++) {
         iFile >> reactions[i].typeOfReaction;
         iFile >> ch; // Ноль
-        iFile >> ch; // количество температурных интервалов
+        iFile >> ch; // Количество температурных интервалов
         iFile >> ch; // Единица
 
         iFile >> reactions[i].temperatureLow;
@@ -256,39 +265,38 @@ void Mixture::fillProducts()
     }
 }
 
-RealType Mixture::calculateCp(int i, RealType t)
+RealType Mixture::calculateCp(RealType t)
 {
     RealType res;
-    POLIN_conc(t);
-    RealType *a = sum_therm;
+    sumPolynomialCoeffs(t);
+    RealType *a = sumThermCoeffs;
     RealType x = t*1E-4;
     res=2*a[2]/x/x+a[1]+2*a[4]*x+6*a[5]*x*x+12*a[6]*x*x*x;	
     res/=AVOGADRO_NUMBER;
     return res;
 }
 
-void Mixture::POLIN_conc(RealType T)  //Averaging of Hibbs coefficients
+void Mixture::sumPolynomialCoeffs(RealType t)
 {
     int i,j,k, nInt ;
     RealType sum=0.0;
-    //CheckTRange( Species,  T);
 
     for(k = 0; k < 7; k++)
     {
-        sum_therm[k] = 0.0;
+        sumThermCoeffs[k] = 0.0;
 
         for(i=0;i<nSubstances;i++)
         {
             for(j = 0; j < substances[i]->nTemperatureRanges; j++)
             {
-                if(T<=substances[i]->temperatureHigh[j])
+                if(t<=substances[i]->temperatureHigh[j])
                 {
                     nInt=j;
                     break;
                 }
                 nInt=j;
             }
-            sum_therm[k]+=concentrations[i]*substances[i]->a[nInt][k];
+            sumThermCoeffs[k]+=concentrations[i]*substances[i]->a[nInt][k];
         }
     }
 }
@@ -376,39 +384,6 @@ RealType Mixture::calculateFullEnergy(RealType pressure, RealType volume)
     return energy;
 }
 
-RealType Mixture::calculateCpOfMixture()
-{
-    RealType cp = 0.0;
-    RealType sumOfFractions = 0.0;
-
-    for (int i = 0; i < nSubstances; i++) {
-        cp += calculateCp(i, temperature) * volumeFractions[i];
-        sumOfFractions += volumeFractions[i];
-    }
-
-    cp /= sumOfFractions;
-
-    return cp;
-}
-
-RealType Mixture::calculateFullEnthalpy(RealType p, RealType v)
-{
-    RealType energy = 0.0;
-    RealType sumOfFractions = 0.0;
-
-    for (int i = 0; i < nSubstances; i++) {
-        // Коэффициент 1.0e6 для перевода из кДж / моль в Дж / кмоль.
-        energy += (calculateEnthalpy(i, temperature) +
-            substances[i]->enthalpyOfFormation * 1.0e6) *
-            volumeFractions[i];
-        sumOfFractions += volumeFractions[i];
-    }
-
-    energy /= (molecularWeight * sumOfFractions);
-
-    return energy;
-}
-
 RealType Mixture::calculateTemperature()
 {
     RealType sumConc = 0.0;
@@ -425,7 +400,7 @@ RealType Mixture::calculateTemperature()
     }
 
     // Теплоёмкость в Дж / (см**3 * К)
-    mixtureHeatCapacity = calculateCp(2, temperature);
+    mixtureHeatCapacity = calculateCp(temperature);
     
     // Теплоёмкость в Дж / (кг * К)
     mixtureHeatCapacityJOverKgK = mixtureHeatCapacity * 1.0e6 * volume;
@@ -447,12 +422,7 @@ RealType Mixture::calculateTemperature()
     mixEnthalpy /= sumConc;
     mixEnthalpy += mixEnthalpyOfFormation;
     mixEnthalpy /= molecularWeight; // Переводим в Дж / кг.
-    energy1 =  - 
-        mixtureHeatCapacityJOverKgK * temperature +
-        mixEnthalpy;
-    RealType energy11 = mixEnthalpy;
-    RealType energy12 = -mixtureHeatCapacityJOverKgK * temperature;
-    energy1 = energy11 + energy12;
+    energy1 =  - mixtureHeatCapacityJOverKgK * temperature + mixEnthalpy;
 
     // Считаем выражение в знаменателе.
     for (int i = 0; i < nSubstances; i++) {
@@ -460,269 +430,6 @@ RealType Mixture::calculateTemperature()
             (R_J_OVER_KMOL_K / substances[i]->molecularWeight);
     }
     energy2 /= sumConc;
-    //energy2 += mixtureHeatCapacityJOverKgK;
-    //energy2 *= molecularWeight; // переводим в Дж / (кмоль * К)
 
-    //return (fullEnergy - energy1) / energy2;
-    RealType en = fullEnergy - energy11;
     return (fullEnergy - energy1) / (mixtureHeatCapacityJOverKgK - energy2);
-}
-
-//RealType Mixture::calculateTemperature()
-//{
-//    RealType sumConc = 0.0;
-//    RealType sumPConc = 0.0;
-//    RealType energy1 = 0.0;
-//    RealType energy2 = 0.0;
-//    RealType mixtureHeatCapacity;
-//    RealType mixtureHeatCapacityJOverKgK;
-//    RealType mixtureHeatCapacityJOverKmoleK;
-//    RealType mixEnthalpyOfFormation = 0.0;
-//    RealType mixEnthalpy = 0.0;
-//    RealType previousCp = 0.0;
-//
-//    for (int i = 0; i < nSubstances; i++) {
-//        sumConc += concentrations[i];
-//        sumPConc += previousConcentrations[i];
-//    }
-//
-//    // Теплоёмкость в Дж / (см**3 * К)
-//    mixtureHeatCapacity = calculateCp(2, temperature);
-//    
-//    // Теплоёмкость в Дж / (кг * К)
-//    mixtureHeatCapacityJOverKgK = mixtureHeatCapacity * 1.0e6 * volume;
-//    
-//    // Теплоёмкость в Дж / (кмоль * К)
-//    mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
-//        molecularWeight;
-//
-//    previousCp = calculatePreviousMixtureCp(temperature);
-//
-//    for (int i = 0; i < nSubstances; i++) {
-//        // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
-//        mixEnthalpyOfFormation += previousConcentrations[i] * 
-//            substances[i]->enthalpyOfFormation * 1.0e6;
-//    }
-//    mixEnthalpyOfFormation /= sumPConc;
-//
-//    for (int i = 0; i < nSubstances; i++) {
-//        mixEnthalpy += previousConcentrations[i] * calculateEnthalpy(i, temperature);
-//    }
-//    mixEnthalpy /= sumPConc;
-//    mixEnthalpy += mixEnthalpyOfFormation;
-//    mixEnthalpy /= previousMolecularWeight; // Переводим в Дж / кг.
-//    energy1 =  - 
-//        previousCp * temperature +
-//        mixEnthalpy;
-//    RealType energy11 = mixEnthalpy;
-//    RealType energy12 = -mixtureHeatCapacityJOverKgK * temperature;
-//    //energy1 = energy11 + energy12;
-//
-//    // Считаем выражение в знаменателе.
-//    for (int i = 0; i < nSubstances; i++) {
-//        energy2 += concentrations[i] * 
-//            (- R_J_OVER_KMOL_K / substances[i]->molecularWeight);
-//    }
-//    energy2 /= sumConc;
-//    //energy2 += mixtureHeatCapacityJOverKgK;
-//    energy2 *= molecularWeight; // переводим в Дж / (кмоль * К)
-//
-//    //return (fullEnergy - energy1) / energy2;
-//    RealType en = fullEnergy - energy11;
-//    return (fullEnergy - energy1) / mixtureHeatCapacityJOverKgK;
-//}
-
-
-//RealType Mixture::calculateTemperature()
-//{
-//    const RealType EPSILON = 1.0e-6;
-//    RealType t = temperature;
-//    int i = 0;
-//    cout << "***************************************************" << endl;
-//
-//    RealType mixEnthalpyJOverKmole = calculateMixtureEnthalpy(t) + calculateMixtureEnthalpyOfFormation();
-//    RealType mixEnthalpy = mixEnthalpyJOverKmole / molecularWeight;
-//    RealType f = fullEnergy - mixEnthalpy;
-//    RealType df = calculateMixtureCp(t);
-//
-//    while (abs(f) >= EPSILON) {
-//        t = t - f / df;
-//
-//        mixEnthalpy = (calculateMixtureEnthalpy(t) + calculateMixtureEnthalpyOfFormation()) / molecularWeight;
-//        f = fullEnergy - mixEnthalpy;
-//        df = -calculateMixtureCp(t);
-//        i++;
-//        cout << i << endl;
-//    }
-//
-//    return t;
-//}
-
-RealType Mixture::calculateMixtureEnthalpy(RealType t)
-{
-    RealType sumConc = 0.0;
-    RealType mixEnthalpy = 0.0;
-
-    for (int i = 0; i < nSubstances; i++) {
-        sumConc += concentrations[i];
-    }
-
-    for (int i = 0; i < nSubstances; i++) {
-        mixEnthalpy += concentrations[i] * calculateEnthalpy(i, t);
-    }
-    mixEnthalpy /= sumConc;
-
-    return mixEnthalpy;
-}
-
-RealType Mixture::calculateMixtureEnthalpyOfFormation()
-{
-    RealType sumConc = 0.0;
-    RealType mixEnthalpyOfFormation = 0.0;
-
-    for (int i = 0; i < nSubstances; i++) {
-        sumConc += concentrations[i];
-    }
-
-    for (int i = 0; i < nSubstances; i++) {
-        // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
-        mixEnthalpyOfFormation += concentrations[i] * 
-            substances[i]->enthalpyOfFormation * 1.0e6;
-    }
-    mixEnthalpyOfFormation /= sumConc;
-
-    return mixEnthalpyOfFormation;
-}
-
-RealType Mixture::calculateMixtureCp(RealType t)
-{
-    RealType mixtureHeatCapacity;
-    RealType mixtureHeatCapacityJOverKgK;
-    RealType mixtureHeatCapacityJOverKmoleK;
-
-    // Теплоёмкость в Дж / (см**3 * К)
-    mixtureHeatCapacity = calculateCp(2, t);
-
-    // Теплоёмкость в Дж / (кг * К)
-    mixtureHeatCapacityJOverKgK = mixtureHeatCapacity * 1.0e6 * volume;
-
-    // Теплоёмкость в Дж / (кмоль * К)
-    mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
-        molecularWeight;
-
-    return mixtureHeatCapacityJOverKgK;
-}
-
-RealType Mixture::calculatePreviousMixtureCp(RealType t)
-{
-    RealType mixtureHeatCapacity;
-    RealType mixtureHeatCapacityJOverKgK;
-    RealType mixtureHeatCapacityJOverKmoleK;
-
-    // Теплоёмкость в Дж / (см**3 * К)
-    mixtureHeatCapacity = calculatePreviousCp(2, t);
-
-    // Теплоёмкость в Дж / (кг * К)
-    mixtureHeatCapacityJOverKgK = mixtureHeatCapacity * 1.0e6 * previousVolume;
-
-    // Теплоёмкость в Дж / (кмоль * К)
-    mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
-        previousMolecularWeight;
-
-    return mixtureHeatCapacityJOverKgK;
-}
-
-RealType Mixture::calculatePreviousCp(int i, RealType t)
-{
-    RealType res;
-    POLIN_conc(t);
-    RealType *a = sum_therm;
-    RealType x = t*1E-4;
-    res=2*a[2]/x/x+a[1]+2*a[4]*x+6*a[5]*x*x+12*a[6]*x*x*x;	
-    res/=AVOGADRO_NUMBER;
-    return res;
-}
-
-void Mixture::previousPOLIN_conc(RealType T)  //Averaging of Hibbs coefficients
-{
-    int i,j,k, nInt ;
-    RealType sum=0.0;
-    //CheckTRange( Species,  T);
-
-    for(k = 0; k < 7; k++)
-    {
-        sum_therm[k] = 0.0;
-
-        for(i=0;i<nSubstances;i++)
-        {
-            for(j = 0; j < substances[i]->nTemperatureRanges; j++)
-            {
-                if(T<=substances[i]->temperatureHigh[j])
-                {
-                    nInt=j;
-                    break;
-                }
-                nInt=j;
-            }
-            sum_therm[k]+=previousConcentrations[i]*substances[i]->a[nInt][k];
-        }
-    }
-}
-
-RealType Mixture::calculateEntropy(int i)
-{
-    RealType result;
-    RealType *a;
-    RealType T = temperature;
-    RealType x = T * 1.0e-4;
-    int nInt;
-    int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (T <= substances[i]->temperatureHigh[j]) {
-            nInt = j;
-            break;
-        }
-        nInt = j;
-    }
-
-    a = substances[i]->a[nInt];
-
-    result = a[0] + a[1] + a[1] * log(x) - a[2] / x / x + 2 * a[4] * x +
-        3 * a[5] * x * x + 4 * a[6] * x * x * x;
-
-    return result;
-}
-
-RealType Mixture::calculateMixtureVolume()
-{
-    RealType sumConc = 0.0;
-    RealType rho     = 0.0;
-    
-    for (int i = 0; i < nSubstances; i++) {
-        sumConc += substances[i]->molecularWeight * concentrations[i];
-    }
-    
-    rho = 1.0e3 * sumConc / AVOGADRO_NUMBER;
-    return 1.0 / rho;
-
-}
-
-void Mixture::assertConcentrationsArePositive()
-{
-    bool isPositive = true;
-    int i;
-
-    for (i = 0; i < nSubstances; i++) {
-        if (concentrations[i] < 0) {
-            isPositive = false;
-            break;
-        }
-    }
-
-    if (isPositive == false) {
-        cout << "Concentration of substance " << i << 
-            " became negative." << endl;
-        exit(-1);
-    }
 }

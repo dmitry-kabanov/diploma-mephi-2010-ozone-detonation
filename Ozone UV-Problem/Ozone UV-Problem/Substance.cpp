@@ -1,11 +1,21 @@
+/**
+* @file
+*
+* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @version %I%
+*
+* @section DESCRIPTION
+*
+* Реализация класса Substance.
+*/
 #include "Substance.h"
 
 Substance::Substance()
 {
-    nameOfSubstance = "";
+    nameOfSubstance     = "";
     enthalpyOfFormation = 0.0;
-    molecularWeight = 0.0;
-    nTemperatureRanges = 0;
+    molecularWeight     = 0.0;
+    nTemperatureRanges  = 0;
 }
 
 void Substance::allocateMemoryForTemperatureRanges(int n)

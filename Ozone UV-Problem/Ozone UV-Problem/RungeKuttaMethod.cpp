@@ -1,3 +1,13 @@
+/**
+* @file
+*
+* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @version %I%
+*
+* @section DESCRIPTION
+*
+* Реализация класса RungeKuttaMethod.
+*/
 #include <iostream>
 #include <cmath>
 #include "RungeKuttaMethod.h"
@@ -100,10 +110,6 @@ void RungeKuttaMethod::performIntegration()
             mixture->concentrations[2] + h * q3, 
             mixture->concentrations[1] + h * r3);
 
-        mixture->previousConcentrations[0] = mixture->concentrations[0];
-        mixture->previousConcentrations[1] = mixture->concentrations[1];
-        mixture->previousConcentrations[2] = mixture->concentrations[2];
-
         mixture->concentrations[0] += h * (k1 + 2 * k2 + 2 * k3 + k4) / 6.0;
         mixture->concentrations[2] += h * (q1 + 2 * q2 + 2 * q3 + q4) / 6.0;
         mixture->concentrations[1] += h * (r1 + 2 * r2 + 2 * r3 + r4) / 6.0;
@@ -113,27 +119,10 @@ void RungeKuttaMethod::performIntegration()
         //    2 * mixture->initialConcentrations[1]) / 
         //    2.0;
 
-        //mixture->concentrations[1] = mixture->concentrations[1] + 
-        //    (-rightSideForO3(time, mixture->concentrations[0],
-        //        mixture->concentrations[2], mixture->concentrations[1]) -
-        //     rightSideForO(time, mixture->concentrations[0], 
-        //        mixture->concentrations[2], mixture->concentrations[1])) *
-        //     0.5 * h;
-
-        //mixture->concentrations[1] = mixture->concentrations[1] + 
-        //    (-k1 - q1) * 0.5 * h;
-        
         cout << i << endl;
-        mixture->assertConcentrationsArePositive();
-
-        mixture->previousMolecularWeight = mixture->molecularWeight;
-        mixture->previousVolume = mixture->volume;
 
         mixture->molecularWeight = mixture->calculateMolecularWeight();
-        //mixture->volume = mixture->calculateMixtureVolume();
-        //mixture->volume = mixture->R_J_OVER_KMOL_K * mixture->temperature / 
-        //    (mixture->pressure * mixture->molecularWeight);
-        mixture->temperature = mixture->calculateTemperature();
+        mixture->temperature     = mixture->calculateTemperature();
 
         time += h;
 
@@ -154,7 +143,6 @@ RealType RungeKuttaMethod::rightSideForO(RealType t,
                                          RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
-    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -164,9 +152,9 @@ RealType RungeKuttaMethod::rightSideForO(RealType t,
     RealType k2f = calculateRateForForwardReaction(1);
     RealType k3f = calculateRateForForwardReaction(2);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
-    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
-    RealType k3r = calculateRateForBackReaction(2, k3f, conc);
+    RealType k1r = calculateRateForBackReaction(0, k1f);
+    RealType k2r = calculateRateForBackReaction(1, k2f);
+    RealType k3r = calculateRateForBackReaction(2, k3f);
 
     RealType skor1 = k1f * concOfO * concOfO3;
     RealType skor2m = k2f * concOfM * concOfO3;
@@ -185,7 +173,6 @@ RealType RungeKuttaMethod::rightSideForO3(RealType t,
                                           RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
-    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -193,8 +180,8 @@ RealType RungeKuttaMethod::rightSideForO3(RealType t,
     RealType k1f = calculateRateForForwardReaction(0);
     RealType k2f = calculateRateForForwardReaction(1);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
-    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
+    RealType k1r = calculateRateForBackReaction(0, k1f);
+    RealType k2r = calculateRateForBackReaction(1, k2f);
 
     m1 = -k1f * concOfO * concOfO3 + k1r * concOfO2 * concOfO2;
     m2 = -k2f * concOfM * concOfO3 + k2r * concOfO2 * concOfO * concOfM;
@@ -208,7 +195,6 @@ RealType RungeKuttaMethod::rightSideForO2(RealType t,
                                          RealType concOfO2)
 {
     RealType concOfM = concOfO + concOfO2 + concOfO3;
-    RealType conc[3] = {concOfO, concOfO2, concOfO3};
 
     RealType m1;
     RealType m2;
@@ -218,9 +204,9 @@ RealType RungeKuttaMethod::rightSideForO2(RealType t,
     RealType k2f = calculateRateForForwardReaction(1);
     RealType k3f = calculateRateForForwardReaction(2);
 
-    RealType k1r = calculateRateForBackReaction(0, k1f, conc);
-    RealType k2r = calculateRateForBackReaction(1, k2f, conc);
-    RealType k3r = calculateRateForBackReaction(2, k3f, conc);
+    RealType k1r = calculateRateForBackReaction(0, k1f);
+    RealType k2r = calculateRateForBackReaction(1, k2f);
+    RealType k3r = calculateRateForBackReaction(2, k3f);
 
     m1 = 2 * k1f * concOfO * concOfO3 - 2 * k1r * concOfO2 * concOfO2;
     m2 = k2f * concOfM * concOfO3 - k2r * concOfO2 * concOfO * concOfM;
@@ -244,7 +230,7 @@ RealType RungeKuttaMethod::calculateRateForForwardReaction(int i)
     return k;
 }
 
-RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, RealType *conc)
+RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
 {
     RealType t = mixture->temperature;
     // Тепловой эффект реакции.
@@ -273,6 +259,8 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, Real
     }
 
     // Константа равновесия.
+    // Значение константы скорости обратной реакции получается с помощью 
+    // константы скорости прямой реакции и константы равновесия.
     RealType kp;
     kp  = exp(-q / (mixture->R_J_OVER_MOL_K * t));
     kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);

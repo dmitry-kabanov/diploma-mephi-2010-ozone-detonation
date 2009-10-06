@@ -1,3 +1,13 @@
+/**
+* @file
+*
+* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @version %I%
+*
+* @section DESCRIPTION
+*
+* Класс смеси.
+*/
 #ifndef MIXTURE_H
 #define MIXTURE_H
 
@@ -11,6 +21,12 @@ class Mixture
 public:
     /**
      * Конструктор класса.
+     *
+     * @param p0                    начальное давление, Па
+     * @param t0                    начальная температура, К
+     * @param fileOfSubstances      имя файла со свойствами веществ
+     * @param fileOfReactions       имя файла с параметрами реакций
+     * @param fileOfVolumeFractions имя файла с объемными долями газов
      */
     Mixture(RealType p0, RealType t0,
             const char *fileOfSubstances,
@@ -58,15 +74,13 @@ public:
      */
     RealType Mixture::calculateGibbsEnergy(int i);
     /**
-     * Вычисляет теплоемкость при постоянном давлении для вещества 
-     * с номером i при температуре t.
+     * Вычисляет изобарную теплоемкость для смеси
+     * при температуре t.
      *
-     * @param i порядковый номер вещества в массиве веществ
      * @param t температура, К
-     * @return вычисленное значение теплоемкости, Дж/(кмоль*К)
+     * @return вычисленное значение теплоемкости, Дж / (см**3 * К)
      */
-    RealType calculateCp(int i, RealType t);
-    RealType calculatePreviousCp(int i, RealType t);
+    RealType calculateCp(RealType t);
     /**
      * Массив веществ.
      */
@@ -108,17 +122,21 @@ public:
      */
     void fillProducts();
     /**
-     * Универсальная газовая постоянная, Дж/(моль*К).
+     * Универсальная газовая постоянная, Дж / (моль * К).
      */
     static const RealType R_J_OVER_MOL_K;
     /**
-     * Универсальная газовая постоянная, Дж/(кмоль*К).
+     * Универсальная газовая постоянная, Дж / (кмоль * К).
      */
     static const RealType R_J_OVER_KMOL_K;
     /**
-     * Константа Больцмана, Дж/К.
+     * Константа Больцмана, Дж / К.
      */
     static const RealType K_BOLTZMANN;
+    /**
+    * Число Авогадро, 1 / моль.
+    */
+    static const RealType AVOGADRO_NUMBER;
     /**
      * Массив концентраций веществ.
      */
@@ -128,69 +146,59 @@ public:
      */
     RealType *initialConcentrations;
     /**
-     * Массив предыдущих концентраций.
-     */
-    RealType *previousConcentrations;
-    /**
      * Выделяет в куче память для массива концентраций веществ в смеси.
      */
     void allocateMemoryForConcentrations();
     /**
-     * Число Авогадро, 1/моль.
-     */
-    static const RealType AVOGADRO_NUMBER;
-    /**
-     * Вычисляет молекулярный вес смеси в кг/кмоль.
+     * Вычисляет молекулярный вес смеси в кг / кмоль.
      */
     RealType calculateMolecularWeight();
     /**
-     *  Вычисляет начальный молекулярный вес смеси в кг/кмоль.
+     *  Вычисляет начальный молекулярный вес смеси в кг / кмоль.
      */
     void calculateInitialMolecularWeight();
     /**
-     * Молекулярный вес смеси, кг/кмоль.
+     * Молекулярный вес смеси, кг / кмоль.
      */
     RealType molecularWeight;
     /**
-     * Начальный молекулярный вес, кг/кмоль.
+     * Начальный молекулярный вес, кг / кмоль.
      */
     RealType initialMolecularWeight;
     /**
-     * Вычисляет полную энергию системы в Дж/кг.
+     * Вычисляет полную энергию системы в Дж / кг.
      *
      * @param pressure давление в системе, Па
-     * @param volume   удельный объем системы, м**3/кг
-     * @return внутренняя энергия системы, Дж/кг
+     * @param volume   удельный объем системы, м**3 / кг
+     * @return внутренняя энергия системы, Дж / кг
      */
     RealType calculateFullEnergy(RealType pressure, RealType volume);
     /**
      * Вычисляет изобарную теплоемкость системы.
      */
-    RealType calculateCpOfMixture();
-    void POLIN_conc(RealType T);
-    void previousPOLIN_conc(RealType T);
-    RealType sum_therm[8];
+    /**
+     * Суммирует термодинамические коэффициенты при соответствующих степенях 
+     * в полиномах для всех веществ в смеси.
+     */
+    void sumPolynomialCoeffs(RealType t);
+    /**
+     * Суммарные коэффициенты при соответствующих степенях полинома.
+     */
+    RealType sumThermCoeffs[8];
     /**
      * Давление смеси, Па.
      */
     RealType pressure;
+    /**
+     * Удельный объем смеси, м**3 / кг.
+     */
     RealType volume;
-    RealType calculateFullEnthalpy(RealType p, RealType v);
     /**
      * Вычисляет температуру при заданном составе смеси.
      *
      * @return температура, К
      */
     RealType calculateTemperature();
-    RealType calculateMixtureEnthalpyOfFormation();
-    RealType calculateMixtureEnthalpy(RealType t);
-    RealType calculateMixtureCp(RealType t);
-    RealType calculateEntropy(int i);
-    RealType calculateMixtureVolume();
-    void assertConcentrationsArePositive();
-    RealType calculatePreviousMixtureCp(RealType t);
-    RealType previousMolecularWeight;
-    RealType previousVolume;
 };
 
 #endif
