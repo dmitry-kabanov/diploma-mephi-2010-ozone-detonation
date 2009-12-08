@@ -21,9 +21,10 @@ public:
     RealType calculateVelocity(RealType f);
 private:
     void readFileOfPiston(const char* filename);
-    int nColumns;
-    RealType* pressures;
-    RealType* fractions;
+    int nRows;
+    RealType *pressures;
+    RealType *densities;
+    RealType *fractions;
 };
 
 #endif // Piston_h__

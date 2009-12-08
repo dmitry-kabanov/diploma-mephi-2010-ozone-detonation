@@ -24,8 +24,11 @@ public:
      *
      * @param fileOfSubstances      имя файла со свойствами веществ
      * @param fileOfReactions       имя файла с параметрами реакций
+     * @param fileOfMoleFractions   имя файла с значениями мольных долей
      */
-    Mixture(const char *fileOfSubstances, const char *fileOfReactions);
+    Mixture(const char *fileOfSubstances,
+            const char *fileOfReactions,
+            const char *fileOfMoleFractions);
     /**
      * Деструктор класса.
      */
@@ -204,6 +207,7 @@ public:
     RealType calculateInitialTemperature();
     void fillUpMixture(RealType internalEnergy, RealType density, RealType* volFracts);
     RealType calculatePressure();
+    RealType calculateOldPressure();
     RealType calculateMixtureCp(RealType t);
     RealType calculateMixtureEnthalpy(RealType t);
     RealType calculateSubstanceCp(int i, RealType t);
@@ -225,6 +229,7 @@ public:
      * Возвращает молекулярный вес смеси.
      */
     RealType getMolecularWeight();
+    void fillUpMixtureWithTAndP(RealType t, RealType p, RealType *vf);
 };
 
 #endif

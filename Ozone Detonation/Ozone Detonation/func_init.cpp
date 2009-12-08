@@ -1,5 +1,4 @@
 #include <cmath>
-#include "real_number_type.h"
 #include "RealType.h"
 #include "RungeKuttaMethod.h"
 #include "constants.h"
@@ -52,11 +51,12 @@ void init_parameters(RealType *x, RealType *x_center,
     shock_wave_front[L+1] = true;
 }
 
-void init_thermodynamic_parameters(
-    RealType *internal_energy, RealType *energy,
-    RealType *temperature, RealType *p, 
-    RealType *rho, RealType *u,
-    RealType *gamma, RealType *u_energy,
+void init_thermodynamic_parameters(RealType *internal_energy,
+    RealType *energy,
+    RealType *p, 
+    RealType *rho,
+    RealType *u,
+    RealType *u_energy,
     RealType *volumeFractions[],
     RungeKuttaMethod& kinetics)
 {

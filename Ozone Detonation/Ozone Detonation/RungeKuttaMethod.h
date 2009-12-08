@@ -17,8 +17,9 @@
 #include "Mixture.h"
 #include "Reaction.h"
 #include "Substance.h"
+#include "Stiffl1.h"
 
-class RungeKuttaMethod
+class RungeKuttaMethod : public Stiffl
 {
 public:
     /**
@@ -27,8 +28,11 @@ public:
      * @param fileOfSubstances      имя файла с веществами
      * @param fileOfReactions       имя файла с реакциями
      */
-    RungeKuttaMethod(const char *fileOfSubstances,
-                     const char *fileOfReactions);
+	RungeKuttaMethod(int NYDIM_PAR, double *values, double t_begin, double t_end,
+					 double t_step_begin,
+					 const char *fileOfSubstances,
+                     const char *fileOfReactions,
+                     const char *fileOfMoleFractions);
     /**
      * Деструктор класса.
      */
@@ -36,12 +40,22 @@ public:
     /**
     * Производит интегрирование системы ОДУ.
     *
-    * @param internalEnergy внутренняя энергия, Дж/кг
-    * @param density        плотность, кг/м**3
-    * @param volFracts      объемные концентрации
+    * @param aFullTime временной интервал, на котором 
+    * производится интегрирование.
     */
     void performIntegration(RealType aFullTime);
-    RealType *getVolumeFractions();
+    /**
+     * Обновляет значения мольных долей компонентов смеси.
+     *
+     * @param vf указатель на массив, в который пишутся
+     * новые значения мольных долей.
+     */
+    void updateMoleFractions(RealType *vf);
+    /**
+     * Возвращает значение давления в смеси.
+     *
+     * @return давление в смеси, Па
+     */
     RealType getPressure();
     /**
      * Смесь газов.
@@ -59,47 +73,41 @@ private:
      * Вычисляет значение скорости реакции по O3 при заданной температуре
      * и составе.
      *
-     * @param t         температура, К
      * @param concOfO   концентрация O, молекул / см**3
      * @param concOfO3  концентрация O3, молекул / см**3
      * @param concOfO2  концентрация O2, молекул / см**3
      * @return          значение скорости реакции относительно O3,
      * молекул / (см**3 * с)
      */
-    RealType rightSideForO3(RealType t, 
-                            RealType concOfO, 
+    RealType rightSideForO3(RealType concOfO, 
                             RealType concOfO3,
                             RealType concOfO2);
     /**
     * Вычисляет значение скорости реакции по O при заданной температуре
     * и составе.
     *
-    * @param t         температура, К
     * @param concOfO   концентрация O, молекул / см**3
     * @param concOfO3  концентрация O3, молекул / см**3
     * @param concOfO2  концентрация O2, молекул / см**3
     * @return          значение скорости реакции относительно O,
     * молекул / (см**3 * с)
     */
-    RealType rightSideForO(RealType t, 
-                           RealType concOfO, 
+    RealType rightSideForO(RealType concOfO, 
                            RealType concOfO3, 
                            RealType concOfO2);
     /**
     * Вычисляет значение скорости реакции по O2 при заданной температуре
     * и составе.
     *
-    * @param t         температура, К
     * @param concOfO   концентрация O, молекул / см**3
     * @param concOfO3  концентрация O3, молекул / см**3
     * @param concOfO2  концентрация O2, молекул / см**3
     * @return          значение скорости реакции относительно O2,
     * молекул / (см**3 * с)
     */
-    RealType rightSideForO2(RealType t, 
-                           RealType concOfO, 
-                           RealType concOfO3, 
-                           RealType concOfO2);
+    RealType rightSideForO2(RealType concOfO, 
+                            RealType concOfO3, 
+                            RealType concOfO2);
     /**
      * Вычисляет константу скорости прямой реакции.
      *
@@ -115,10 +123,6 @@ private:
     * @return   значение константы скорости обратной реакции.
     */
     RealType calculateRateForBackReaction(int i, RealType kf);
-    /**
-     * Временной шаг интегрирования, с
-     */
-    RealType h;
     /**
      * Количество временных шагов интегрирования.
      */
@@ -147,6 +151,15 @@ private:
      * Количество итераций в цикле интегрирования.
      */
     int nIterations;
+	RealType k1f;
+	RealType k2f;
+	RealType k3f;
+	RealType k1r;
+	RealType k2r;
+	RealType k3r;
+	virtual int IFNSH();
+	virtual int DIFFUN(double **YY, double *F);
+	virtual void PEDERV();
 };
 
 #endif

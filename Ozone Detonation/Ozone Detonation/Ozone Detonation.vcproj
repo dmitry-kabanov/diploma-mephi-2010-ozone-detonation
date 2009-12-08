@@ -22,6 +22,7 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="1"
 			CharacterSet="1"
+			WholeProgramOptimization="0"
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
@@ -46,7 +47,8 @@
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="3"
 				UsePrecompiledHeader="0"
-				WarningLevel="3"
+				WarningLevel="4"
+				SuppressStartupBanner="false"
 				DebugInformationFormat="4"
 			/>
 			<Tool
@@ -211,6 +213,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Stiffl1.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Substance.cpp"
 				>
 			</File>
@@ -245,6 +251,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\main.h"
+				>
+			</File>
+			<File
 				RelativePath=".\Mixture.h"
 				>
 			</File>
@@ -257,15 +267,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\real_number_type.h"
-				>
-			</File>
-			<File
 				RelativePath=".\RealType.h"
 				>
 			</File>
 			<File
 				RelativePath=".\RungeKuttaMethod.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Stiffl1.h"
 				>
 			</File>
 			<File
@@ -284,6 +294,10 @@
 			>
 		</File>
 		<File
+			RelativePath=".\MoleFractions.txt"
+			>
+		</File>
+		<File
 			RelativePath=".\Piston.txt"
 			>
 		</File>
@@ -293,10 +307,6 @@
 		</File>
 		<File
 			RelativePath=".\Substances.txt"
-			>
-		</File>
-		<File
-			RelativePath=".\VolumeFractions.txt"
 			>
 		</File>
 	</Files>

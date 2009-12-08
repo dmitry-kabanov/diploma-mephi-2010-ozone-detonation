@@ -22,13 +22,26 @@ const RealType Mixture::R_J_OVER_KMOL_K = 8314.41;
 const RealType Mixture::AVOGADRO_NUMBER = 6.022e23;
 const RealType Mixture::K_BOLTZMANN     = 1.38e-23;
 
-Mixture::Mixture(const char *fileOfSubstances, const char *fileOfReactions)
+Mixture::Mixture(const char *fileOfSubstances, 
+                 const char *fileOfReactions,
+                 const char *fileOfMoleFractions)
 {
     readFileOfSubstances(fileOfSubstances);
     readFileOfReactions(fileOfReactions);
+    readFileOfVolumeFractions(fileOfMoleFractions);
+}
 
-    volumeFractions = new RealType[nSubstances];
-    allocateMemoryForConcentrations();
+Mixture::~Mixture()
+{
+    for (int i = 0; i < nSubstances; ++i) {
+        delete substances[i];
+    }
+    delete [] substances;
+    delete [] concentrations;
+    delete [] initialConcentrations;
+    delete [] previousConcentrations;
+    delete [] reactions;
+    delete [] volumeFractions;
 }
 
 void Mixture::readFileOfSubstances(const char *filename)
@@ -94,6 +107,8 @@ void Mixture::readFileOfReactions(const char *filename)
     }
     fillReagents();
     fillProducts();
+
+    iFile.close();
 }
 
 void Mixture::readFileOfVolumeFractions(const char *filename)
@@ -112,6 +127,8 @@ void Mixture::readFileOfVolumeFractions(const char *filename)
             }
         }
     }
+
+    iFile.close();
 
     RealType sum = 0.0;
     for (int i = 0; i < nSubstances; i++) {
@@ -279,7 +296,6 @@ RealType Mixture::calculateSubstanceCp(int i, RealType t)
 void Mixture::sumPolynomialCoeffs(RealType t)
 {
     int i,j,k, nInt ;
-    RealType sum=0.0;
 
     for(k = 0; k < 7; k++)
     {
@@ -327,13 +343,6 @@ RealType Mixture::calculateGibbsEnergy(int i)
     result -= a[6]*T*T*T*T*1E-12;
     result  = substances[i]->enthalpyOfFormation * 1E3 + result;
     return result;
-}
-
-Mixture::~Mixture()
-{
-    delete [] substances;
-    delete [] concentrations;
-    delete [] reactions;
 }
 
 RealType Mixture::calculateMolecularWeight()
@@ -436,15 +445,39 @@ RealType Mixture::calculateTemperature()
 
 RealType Mixture::calculateInitialTemperature()
 {
-    RealType t = 1000;
+    // Номер итерации.
+    int k = 0;
+    // Максимальное количество итераций.
+    const int maxIterations = 100;
+    // Точность нахождения температуры.
+    RealType precision = 1e-3;
+    // Задаем начальное приближение.
+    RealType t = 2000;
+    // Уравнение, связывающее удельную внутреннюю энергию
+    // с удельной энтальпией.
     RealType func = calculateMixtureEnthalpy(t) - R_J_OVER_KMOL_K * t / molecularWeight - fullEnergy;
+    // Производная по температуре от функции func.
     RealType dfunc;
-    calculateCp(1200);
 
-    while (abs(func) >= 1e-6) {
+    while (abs(func) >= precision) {
         dfunc = (calculateMixtureCp(t) - R_J_OVER_KMOL_K / molecularWeight);
         t = t - func / dfunc;
         func = calculateMixtureEnthalpy(t) - R_J_OVER_KMOL_K * t / molecularWeight - fullEnergy;
+        k++;
+
+        if (k > maxIterations) {
+            cout << "Initial temperature function: " << 
+                "limit of iterations (" << maxIterations << 
+                ") was reached." << endl;
+            cout << "Internal energy = " << fullEnergy << " J/kg" << endl;
+            cout << "Density         = " << 1.0 / volume << endl;
+            cout << "X(O)            = "  << volumeFractions[0] << endl;
+            cout << "X(O2)           = "  << volumeFractions[1] << endl;
+            cout << "X(O3)           = "  << volumeFractions[2] << endl;
+            cout << "T = " << t << endl;
+            //exit(-1);
+            return t;
+        }
     }
 
     return t;
@@ -521,6 +554,7 @@ RealType Mixture::calculateMixtureEnthalpy(RealType t)
     for (int i = 0; i < nSubstances; i++) {
         mixEnthalpy += volumeFractions[i] * calculateEnthalpy(i, t);
     }
+    
     mixEnthalpy += mixEnthalpyOfFormation;
     mixEnthalpy /= molecularWeight; // Переводим в Дж / кг.
 
@@ -542,6 +576,8 @@ void Mixture::setConcentrations(RealType t, RealType density)
     volume = 1.0 / density;
 
     calculateInitialMolecularWeight();
+
+    temperature = t;
 
     pressure = (R_J_OVER_KMOL_K * temperature) / (molecularWeight * volume);
 
@@ -570,4 +606,42 @@ void Mixture::setVolumeFractions(const RealType *fractions)
 RealType Mixture::getMolecularWeight()
 {
     return molecularWeight;
+}
+
+RealType Mixture::calculateOldPressure()
+{
+    return (R_J_OVER_KMOL_K * oldTemperature) / (initialMolecularWeight * volume);
+}
+
+void Mixture::fillUpMixtureWithTAndP(RealType t, RealType p, RealType *vf)
+{
+    calculateInitialMolecularWeight();
+
+    RealType sumFractions = 0.0;
+
+    for (int i = 0; i < nSubstances; ++i) {
+        volumeFractions[i] = vf[i];
+        sumFractions += volumeFractions[i];
+    }
+
+    for (int i = 0; i < nSubstances; ++i) {
+        volumeFractions[i] /= sumFractions;
+    }
+
+    temperature = t;
+	oldTemperature = t;
+    pressure    = p;
+
+    volume = (R_J_OVER_KMOL_K * temperature) / (molecularWeight * pressure);
+
+    RealType densityKmoleOverM3 = pressure / 
+        (temperature * R_J_OVER_KMOL_K); // кмоль м-3
+
+    for (int i = 0; i < nSubstances; i++) {
+        concentrations[i] = 1.0e-3 * densityKmoleOverM3 * 
+            AVOGADRO_NUMBER * volumeFractions[i];
+        initialConcentrations[i] = concentrations[i];
+    }
+
+    fullEnergy = calculateMixtureEnthalpy(temperature) - pressure * volume;
 }

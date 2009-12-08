@@ -7,8 +7,10 @@
  *
  * Главный файл проекта Ozone Detonation.
  */
+#include "main.h"
 #include <cstdio>
 #include <cmath>
+#include <ctime>
 #include <iostream>
 #include <fstream>
 #include "constants.h"
@@ -19,9 +21,10 @@
 #include "RealType.h"
 #include "RungeKuttaMethod.h"
 #include "Piston.h"
+#include "Stiffl1.h"
 using namespace std;
 
-int main(int argc, char *argv[])
+int main(/*int argc, char *argv[]*/)
 {
     int i, j;
 
@@ -29,7 +32,21 @@ int main(int argc, char *argv[])
     int cells_numbers[N+1];
 
     RealType shock_wave_velocity, delta_mass;
-    RungeKuttaMethod kinetics("Substances.txt", "Reactions.txt");
+	int nSpecies = 3;
+	double vf1[4];
+	vf1[0] = 0.0;
+	vf1[1] = 0.0;
+	vf1[2] = 0.0;
+	vf1[3] = 0.0;
+    RungeKuttaMethod kinetics(
+		nSpecies + 1,
+		vf1,
+		0.0,
+		0.0,
+		1.0e-12,
+		"Substances.txt",
+        "Reactions.txt",
+        "MoleFractions.txt");
     Piston aPiston;
 	
     // Объявление основных величин.
@@ -43,7 +60,7 @@ int main(int argc, char *argv[])
     // Объемные доли компонентов смеси.
     RealType **volumeFractions  = new RealType*[N+1];
     for (i = 0; i <= N; i++) {
-        volumeFractions[i] = new RealType[2];
+        volumeFractions[i] = new RealType[kinetics.getMixture()->nSubstances];
     }
 
     // Объявление термодинамических величин.
@@ -95,12 +112,6 @@ int main(int argc, char *argv[])
     // Если значение элемента равно false - то нет.
     bool shock_wave_front[N+1];
 
-    int num_digits;
-    char str_time[32];
-    char filename[] = "d:\\Ozone Detonation\\data_";
-    char file_ext[5] = ".csv";
-    char fullname[64];
-
     //std::ofstream out_front("sw_front.txt");
     //out_front.setf(std::ios::fixed, std::ios::floatfield);
     //out_front.precision(6);
@@ -115,8 +126,7 @@ int main(int argc, char *argv[])
     init_volume_fractions(volumeFractions);
     init_thermodynamic_parameters(
         internal_energy, e, 
-        temperature, p, 
-        rho, u, gamma,
+        p, rho, u,
         u_energy,
         volumeFractions,
         kinetics
@@ -139,18 +149,65 @@ int main(int argc, char *argv[])
         rho_e_tg_left, rho_e_tg_right, rho_e_tg
     );
 
-    std::ofstream out("d:\\Ozone Detonation\\data_0.csv");
-    out.setf(std::ios::fixed, std::ios::floatfield);
-    out.precision(6);
+ //   RealType *vf = new RealType[2];
+ //   vf[2] = 100.0;
+ //   vf[1] = 0.0;
+ //   vf[0] = 0.0;
+ //   
+ //////   kinetics.getMixture()->fillUpMixture(3297630, 3.58197, vf);
+	//clock_t start = clock();
+ //   kinetics.getMixture()->fillUpMixtureWithTAndP(1909.36, 6521980, vf);
+ //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
+	//cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
+	//kinetics.performIntegration(1.0);
+ //   kinetics.updateMoleFractions(vf);
 
-    outputAsCSVFile(out, cells_numbers, 
+ //   cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
+ //   cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
+ //   cout << "X(O)  = " << vf[0]  << endl;
+ //   cout << "X(O2) = " << vf[1] << endl;
+ //   cout << "X(O3) = " << vf[2] << endl;
+	//clock_t finish = clock();
+
+	//double workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
+
+	//cout << "Calculations done in " << workingTime << " s." << endl;
+
+	//vf[2] = 100.0;
+ //   vf[1] = 0.0;
+ //   vf[0] = 0.0;
+ //   
+ //////   kinetics.getMixture()->fillUpMixture(3297630, 3.58197, vf);
+	//start = clock();
+ //   kinetics.getMixture()->fillUpMixtureWithTAndP(1909.36, 6521980, vf);
+ //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
+	//cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
+	//kinetics.performIntegration(1.0);
+ //   kinetics.updateMoleFractions(vf);
+
+ //   cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
+ //   cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
+ //   cout << "X(O)  = " << vf[0]  << endl;
+ //   cout << "X(O2) = " << vf[1] << endl;
+ //   cout << "X(O3) = " << vf[2] << endl;
+	//finish = clock();
+
+	//workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
+
+	//cout << "Calculations done in " << workingTime << " s." << endl;
+	//
+	//
+	//delete [] vf;
+
+ //   exit(0);
+
+    // Пишем начальные значения в файл.
+    outputAsCSVFile(0, cells_numbers, 
         x_center, p, 
         u, rho, 
         e, u_energy, 
         volumeFractions, shock_wave_front
     );
-
-    out.close();
 
     /*
      * Основной цикл по времени
@@ -303,13 +360,9 @@ int main(int argc, char *argv[])
          * На левой границе у нас находится поршень.
          * Считаем параметры для поршня.
          */
-        //calc_piston(piston, volumeFractions[1][2]/100.0, sqrt(F) * D_C_J, gamma[1]);
-        //p_contact[0] = p[1];
-        //// Левая граница области расчета движется со скоростью поршня.
-        //u_contact[0] = piston[1];
+        // Левая граница области расчета движется со скоростью поршня.
         p_contact[0] = p[1];
-        //u_contact[0] = aPiston.calculateVelocity(volumeFractions[1][2]);
-        u_contact[0]   = U_PISTON;
+        u_contact[0] = aPiston.calculateVelocity(volumeFractions[1][2]);
 
         /**
          * Считаем импульс и энергию в ячейке.
@@ -379,10 +432,11 @@ int main(int argc, char *argv[])
                 // ударную волну на левой границе.
                 // Её правая граница движется со скоростью контактного разрыва.
                 x[i] = x[i] + u_contact[i] * DT;
+                x_center[i] = (x[i-1] + x[i]) / 2.0;
                 u[i] = (m[i] * u[i] + delta_impulse[i]) / (m[i] - delta_mass);
                 e[i] = (m[i] * e[i] + delta_energy[i]) / (m[i] - delta_mass);
                 m[i] = m[i] - delta_mass;
-                cout << shock_wave_velocity << endl;
+                // cout << shock_wave_velocity << endl;
                 break;
             }
             else {
@@ -396,29 +450,31 @@ int main(int argc, char *argv[])
             rho[i] = m[i] / (x[i] - x[i-1]);
             u_energy[i] = e[i] - u[i] * u[i] / 2.0;
             kinetics.getMixture()->fillUpMixture(u_energy[i], rho[i], volumeFractions[i]);
-            volumeFractions[i] = kinetics.getVolumeFractions();
+            kinetics.performIntegration(DT);
+            kinetics.updateMoleFractions(volumeFractions[i]);
             p[i] = kinetics.getPressure();
-            cout << j << ": (" <<
-                i << ") " <<
-                volumeFractions[i][0] << " " << 
-                volumeFractions[i][1] << " " << 
-                volumeFractions[i][2] << " u=" << 
-                u[i] << " rho=" << rho[i] << endl;
-            cout << "U=" << u_energy[i] << " " << " oldT=" <<
-                kinetics.mixture->getOldTemperature() << " T=" <<
-                kinetics.mixture->getTemperature() << " p=" << 
-                p[i] << endl;
+            //cout << j << ": (" <<
+            //    i << ") " <<
+            //    volumeFractions[i][0] << " " << 
+            //    volumeFractions[i][1] << " " << 
+            //    volumeFractions[i][2] << " u=" << 
+            //    u[i] << " rho=" << rho[i] << endl;
+            //cout << "U=" << u_energy[i] << " " << " oldT=" <<
+            //    kinetics.mixture->getOldTemperature() << " T=" <<
+            //    kinetics.mixture->getTemperature() << " p=" << 
+            //    p[i] << endl;
             rho_u[i] = rho[i] * u[i];
             gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
             rho_e[i] = rho[i] * p[i] / ((gamma[i] - 1) * rho[i]);
         }
 
-        
+        // Записываем зависимость давления на фронте ударной волны
+        // от времени в файл out_front.
         //for (i = 1; i < N; i++) {
         //    /**
         //     * TODO: убрать магическое число 100.
         //     */
-        //    if (i % 10 == 0) {
+        //    if (i % 500 == 0) {
         //        if (shock_wave_front[i] == true 
         //            && shock_wave_front[i+1] == true)
         //        {
@@ -429,22 +485,13 @@ int main(int argc, char *argv[])
         //}
 
         if (j % TIMEDIVISOR == 0) {
-            num_digits = sprintf_s(str_time, "%d", j);
-            strcpy_s(fullname, filename);
-            strcat_s(fullname, str_time);
-            strcat_s(fullname, file_ext);
-            
-            std::ofstream out(fullname);
-            out.setf(std::ios::fixed, std::ios::floatfield);
-            out.precision(6);
-            
-            outputAsCSVFile(out, cells_numbers, 
+            cout << "j = " << j << endl;
+            cout << "D = " << shock_wave_velocity << endl << endl;
+            outputAsCSVFile(j, cells_numbers, 
                             x_center, p, 
                             u, rho,  
                             e, u_energy, 
                             volumeFractions, shock_wave_front);
-            
-            out.close();
         }
 
         // Модифицируем ячейки, связанные с фронтом ударной волны.
@@ -516,6 +563,9 @@ int main(int argc, char *argv[])
     delete [] e;
     delete [] temperature;
 
+    for (int i = 0; i <= N; ++i) {
+        delete [] volumeFractions[i];
+    }
     delete [] volumeFractions;
 
     delete [] gamma;

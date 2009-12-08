@@ -1,10 +1,9 @@
 #ifndef FUNC_OUTPUT_H
 #define FUNC_OUTPUT_H
 
-#include <fstream>
 #include "RealType.h"
 
-void outputAsCSVFile(std::ofstream &outFile,
+void outputAsCSVFile(int timeStep,
                      const int *cellNumbers,
                      const RealType *xCenter,
                      const RealType *p,

@@ -19,13 +19,14 @@ void init_parameters(
  * rho (плотность) - для расчета внутренней энергии,
  * u (скорость) - для расчета полной энергии.
  */
-void init_thermodynamic_parameters(
-    RealType *internal_energy, RealType *energy,
-    RealType *temperature, RealType *p, 
-    RealType *rho, RealType *u, RealType* gamma,
-    RealType *u_energy,
-    RealType *volumeFractions[],
-    RungeKuttaMethod &kinetics
+void init_thermodynamic_parameters(RealType *internal_energy,
+                                   RealType *energy,
+                                   RealType *p,
+                                   RealType *rho,
+                                   RealType *u,
+                                   RealType *u_energy,
+                                   RealType *volumeFractions[],
+                                   RungeKuttaMethod &kinetics
 );
 
 /**

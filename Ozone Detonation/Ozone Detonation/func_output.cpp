@@ -4,7 +4,7 @@
 #include "constants.h"
 #include "RealType.h"
 
-void outputAsCSVFile(std::ofstream &outFile,
+void outputAsCSVFile(int timeStep,
                      const int *cellNumbers,
                      const RealType *xCenter,
                      const RealType *p,
@@ -15,9 +15,24 @@ void outputAsCSVFile(std::ofstream &outFile,
                      RealType *volumeFractions[],
                      const bool *shockWaveVelocity)
 {
-    outFile << "Cells Numbers;xCenter;Pressure (Pa);Velocity (m/s);" <<
+    int num_digits;
+    char time[32];
+    char filename[] = "Output\\data_";
+    char file_ext[5] = ".csv";
+    char fullname[64];
+    
+    num_digits = sprintf_s(time, "%d", timeStep);
+    strcpy_s(fullname, filename);
+    strcat_s(fullname, time);
+    strcat_s(fullname, file_ext);
+
+    std::ofstream outFile(fullname);
+    outFile.setf(std::ios::fixed, std::ios::floatfield);
+    outFile.precision(6);
+    
+    outFile << "Cell No;Coordinate (m);Pressure (Pa);Velocity (m/s);" <<
         "Density (kg m-3);Full energy (J kg-1);Internal Energy (J kg-1);" << 
-        "Mole Fraction of O;Mole Fraction of O2;Mole Fraction of O3" << 
+        "X(O);X(O2);X(O3)" << 
         std::endl;
 
     for (int i = 1; i < N; i++) {
@@ -36,4 +51,6 @@ void outputAsCSVFile(std::ofstream &outFile,
             break;
         }
     }
+
+    outFile.close();
 }
