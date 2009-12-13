@@ -8,11 +8,12 @@
 *
 * Реализация класса Mixture.
 */
+#include "Mixture.h"
 #include <cmath>
 #include <iostream>
 #include <fstream>
 #include <string>
-#include "Mixture.h"
+#include "constants.h"
 #include "Substance.h"
 #include "Reaction.h"
 using namespace std;
@@ -199,6 +200,39 @@ RealType Mixture::calculateSubstanceEnthalpy(int i, RealType t)
     return res;
 }
 
+RealType Mixture::calculateSubstanceEntropy(int i, RealType t)
+{
+    int numberOfTemperatureRange;
+    int j;
+
+    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
+        if (t <= substances[i]->temperatureHigh[j]) {
+            numberOfTemperatureRange = j;
+            break;
+        }
+        numberOfTemperatureRange = j;
+    }
+
+
+    RealType res = 0;
+    RealType pressureDependentMember = 0;
+    RealType *a = substances[i]->a[numberOfTemperatureRange];
+
+    res += a[0] * log(t);
+    for (j = 1; j <= 4; ++j) {
+        res += a[j] * pow(t, j) / ((RealType) j);
+    }
+    res += a[6];
+    res *= R_J_OVER_KMOL_K / substances[i]->molecularWeight;
+
+    pressureDependentMember = R_J_OVER_KMOL_K / substances[i]->molecularWeight *
+        log(pressure / ONE_BAR);
+
+    res -= pressureDependentMember;
+
+    return res;
+}
+
 void Mixture::fillReagents()
 {
     string s;
@@ -330,32 +364,10 @@ void Mixture::sumPolynomialCoeffs(RealType t)
     }
 }
 
-RealType Mixture::calculateGibbsEnergy(int i)
+RealType Mixture::calculateSubstanceGibbsEnergy(int i, RealType t)
 {
-    RealType result;
-    RealType T = temperature;
-    RealType *a;
-    int nInt;
-    int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (T <= substances[i]->temperatureHigh[j]) {
-            nInt = j;
-            break;
-        }
-        nInt = j;
-    }
-
-    a = substances[i]->a[nInt];
-    result  = -a[0]*T;
-    result -= a[1]*T*(log(T)-4*log(10.0));
-    result -= a[2]*1E8/T;
-    result -= a[3]*1E4;
-    result -= a[4]*T*T*1E-4;
-    result -= a[5]*T*T*T*1E-8;
-    result -= a[6]*T*T*T*T*1E-12;
-    result  = substances[i]->enthalpyOfFormation * 1E3 + result;
-    return result;
+    return calculateSubstanceEnthalpy(i, t) - 
+        t * calculateSubstanceEntropy(i, t);
 }
 
 RealType Mixture::calculateMolecularWeight()

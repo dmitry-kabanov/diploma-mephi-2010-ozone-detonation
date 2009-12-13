@@ -35,17 +35,11 @@ RungeKuttaMethod::RungeKuttaMethod(int NYDIM_PAR, double *values, double t_begin
 RungeKuttaMethod::~RungeKuttaMethod()
 {
     delete mixture;
-    outputFile.close();
+    //outputFile.close();
 }
 
 void RungeKuttaMethod::performIntegration(RealType afullTime)
 {
-    // Относительное изменение концентрации O за один временной шаг.
-     RealType alpha = 0.01;
-    RealType k1, k2, k3, k4;
-    RealType q1, q2, q3, q4;
-    RealType r1, r2, r3, r4;
-	RealType h1, h2, h3;
     time = 0.0;
 	int stifflCode;
 
@@ -156,7 +150,7 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
         if (substanceNumber == -1) {
             continue;
         }
-        q += mixture->calculateGibbsEnergy(substanceNumber);
+        q += mixture->calculateSubstanceGibbsEnergy(substanceNumber, t);
         nMoles++;
     }
 
@@ -166,15 +160,18 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
         if (substanceNumber == -1) {
             continue;
         }
-        q -= mixture->calculateGibbsEnergy(substanceNumber);
+        q -= mixture->calculateSubstanceGibbsEnergy(substanceNumber, t);
         nMoles--;
     }
+
+    // Переводим из Дж кг-1 в Дж кмоль-1.
+    q *= mixture->molecularWeight;
 
     // Константа равновесия.
     // Значение константы скорости обратной реакции получается с помощью 
     // константы скорости прямой реакции и константы равновесия.
     RealType kp;
-    kp  = exp(-q / (mixture->R_J_OVER_MOL_K * t));
+    kp  = exp(-q / (mixture->R_J_OVER_KMOL_K * t));
     kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
 
     return kf / kp;
@@ -237,6 +234,7 @@ int RungeKuttaMethod::IFNSH()
 {
 	mixture->molecularWeight = mixture->calculateMolecularWeight();
 	mixture->pressure = mixture->calculatePressure();
+	mixture->temperature = (Y[0])[3];
 	//printToFile();
 
 	return 0;
@@ -248,6 +246,9 @@ int RungeKuttaMethod::DIFFUN(double **YY, double *F)
 	mixture->concentrations[1] = (Y[0])[1];
 	mixture->concentrations[2] = (Y[0])[2];
 	mixture->temperature = (Y[0])[3];
+
+    mixture->molecularWeight = mixture->calculateMolecularWeight();
+    mixture->pressure = mixture->calculatePressure();
 
 	k1f = calculateRateForForwardReaction(0);
 	k2f = calculateRateForForwardReaction(1);
@@ -270,16 +271,21 @@ int RungeKuttaMethod::DIFFUN(double **YY, double *F)
         mixture->concentrations[2],
         mixture->concentrations[1]);
 
-	RealType u = 0, v = 0;
+	RealType u = 0;
+    RealType v = 0;
+
 	for (int i = 0; i < mixture->nSubstances; i++) {
-		u += F[i] * (mixture->substances[i]->enthalpyOfFormation * 1.0e6 + 
-			mixture->calculateSubstanceEnthalpy(i, mixture->temperature) - 
+		u += F[i] * (
+            mixture->calculateSubstanceEnthalpy(i, mixture->temperature) * 
+            mixture->substances[i]->molecularWeight - 
 			mixture->R_J_OVER_KMOL_K * mixture->temperature);
-		v += (mixture->calculateSubstanceCp(i, mixture->temperature) 
-			- mixture->R_J_OVER_KMOL_K) * mixture->concentrations[i];
+		v += (mixture->R_J_OVER_KMOL_K - 
+            mixture->substances[i]->molecularWeight *
+            mixture->calculateSubstanceCp(i, mixture->temperature)) * 
+            mixture->concentrations[i];
 	}
 
-	F[3] = - u / v;
+	F[3] = u / v;
 
 	return 0;
 }

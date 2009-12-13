@@ -174,9 +174,12 @@ int main(/*int argc, char *argv[]*/)
  //   
  //////   kinetics.getMixture()->fillUpMixture(3297630, 3.58197, vf);
 	start = clock();
-    kinetics.getMixture()->setStateWithTPX(1909.36, 6521980, vf);
+    kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
     cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
 	cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
+    cout << "H(O3) = " << kinetics.getMixture()->calculateSubstanceEnthalpy(2, 1914.18) << endl;
+    cout << "S(O3) = " << kinetics.getMixture()->calculateSubstanceEntropy(2, 1914.18) << endl;
+    cout << "G(O3) = " << kinetics.getMixture()->calculateSubstanceGibbsEnergy(2, 1914.18) << endl;
 	kinetics.performIntegration(1.0);
     kinetics.updateMoleFractions(vf);
 

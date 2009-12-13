@@ -67,13 +67,23 @@ public:
      */
     RealType calculateSubstanceEnthalpy(int i, RealType t);
     /**
+     * Вычисляет значение энтропии для i-го вещества 
+     * при температуре t.
+     *
+     * @param i порядковый номер вещества в массиве веществ
+     * @param t температура, К
+     * @return вычисленное значение энтропии, Дж кг-1 К-1
+     */
+    RealType calculateSubstanceEntropy(int i, RealType t);
+    /**
      * Вычисляет энергию Гиббса для i-го вещества
      * при температуре t.
      *
      * @param i порядковый номер вещества в массиве веществ.
-     * @return вычисленное значение энергии Гиббса, Дж / моль.
+     * @param t температура, К
+     * @return вычисленное значение энергии Гиббса, Дж кг-1.
      */
-    RealType calculateGibbsEnergy(int i);
+    RealType calculateSubstanceGibbsEnergy(int i, RealType t);
     /**
      * Вычисляет изобарную теплоемкость для смеси
      * при температуре t.
