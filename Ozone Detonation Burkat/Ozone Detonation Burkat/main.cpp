@@ -161,66 +161,66 @@ int main(/*int argc, char *argv[]*/)
     //}
     //outFile.close();
     //exit(0);
-    RealType vf[2];
+    //RealType vf[2];
     //vf[2] = 0.0;
     //vf[1] = 92.8312;
     //vf[0] = 7.16689;
-    vf[2] = 100.0;
-    vf[1] = 0.0;
-    vf[0] = 0.0;
-    clock_t start;
-    clock_t finish;
-    double workingTime;
+    //vf[2] = 100.0;
+    //vf[1] = 0.0;
+    //vf[0] = 0.0;
+    //clock_t start;
+    //clock_t finish;
+    //double workingTime;
  //   
  //////   kinetics.getMixture()->fillUpMixture(3297630, 3.58197, vf);
-	start = clock();
-    kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
-    cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
-	cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
-    cout << "H(O3) = " << kinetics.getMixture()->calculateSubstanceEnthalpy(2, 1914.18) << endl;
-    cout << "S(O3) = " << kinetics.getMixture()->calculateSubstanceEntropy(2, 1914.18) << endl;
-    cout << "G(O3) = " << kinetics.getMixture()->calculateSubstanceGibbsEnergy(2, 1914.18) << endl;
-	kinetics.performIntegration(1.0);
-    kinetics.updateMoleFractions(vf);
+	//start = clock();
+ //   kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
+ //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
+	//cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
+ //   cout << "H(O3) = " << kinetics.getMixture()->calculateSubstanceEnthalpy(2, 1914.18) << endl;
+ //   cout << "S(O3) = " << kinetics.getMixture()->calculateSubstanceEntropy(2, 1914.18) << endl;
+ //   cout << "G(O3) = " << kinetics.getMixture()->calculateSubstanceGibbsEnergy(2, 1914.18) << endl;
+	//kinetics.performIntegration(1.0);
+ //   kinetics.updateMoleFractions(vf);
 
-    cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
-    cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
-    cout << "X(O)  = " << vf[0]  << endl;
-    cout << "X(O2) = " << vf[1] << endl;
-    cout << "X(O3) = " << vf[2] << endl;
-	finish = clock();
+ //   cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
+ //   cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
+ //   cout << "X(O)  = " << vf[0]  << endl;
+ //   cout << "X(O2) = " << vf[1] << endl;
+ //   cout << "X(O3) = " << vf[2] << endl;
+	//finish = clock();
 
-	workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
+	//workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
 
-	cout << "Calculations done in " << workingTime << " s." << endl;
+	//cout << "Calculations done in " << workingTime << " s." << endl;
 
-	vf[2] = 100.0;
-    vf[1] = 0.0;
-    vf[0] = 0.0;
+	//vf[2] = 100.0;
+ //   vf[1] = 0.0;
+ //   vf[0] = 0.0;
     
-    kinetics.getMixture()->setStateWithURhoX(3297630, 3.58197, vf);
-	start = clock();
-    kinetics.getMixture()->setStateWithTPX(3445.82, 3326220, vf);
-    cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
-	cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
-	kinetics.performIntegration(1.0);
-    kinetics.updateMoleFractions(vf);
+    //kinetics.getMixture()->setStateWithURhoX(3297630, 3.58197, vf);
+	//start = clock();
+ //   kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
+ //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
+	//cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
+	//kinetics.performIntegration(1.0);
+ //   kinetics.updateMoleFractions(vf);
 
-    cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
-    cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
-    cout << "X(O)  = " << vf[0]  << endl;
-    cout << "X(O2) = " << vf[1] << endl;
-    cout << "X(O3) = " << vf[2] << endl;
-	finish = clock();
+ //   cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
+ //   cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
+ //   cout << "X(O)  = " << vf[0]  << endl;
+ //   cout << "X(O2) = " << vf[1] << endl;
+ //   cout << "X(O3) = " << vf[2] << endl;
+	//finish = clock();
 
-	workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
+	//workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
 
-	cout << "Calculations done in " << workingTime << " s." << endl;
-    exit(0);
+	//cout << "Calculations done in " << workingTime << " s." << endl;
+    //exit(0);
 
     // ********************************************************************
     // Пишем начальные значения в файл.
-    outputAsCSVFile(0, cells_numbers, 
+    outputAsCSVFile(0, cells_numbers, x,
         x_center, p, 
         u, rho, 
         e, u_energy, 
@@ -505,7 +505,7 @@ int main(/*int argc, char *argv[]*/)
         if (j % TIMEDIVISOR == 0) {
             cout << "j = " << j << endl;
             cout << "D = " << shock_wave_velocity << endl << endl;
-            outputAsCSVFile(j, cells_numbers, 
+            outputAsCSVFile(j, cells_numbers, x,
                             x_center, p, 
                             u, rho,  
                             e, u_energy, 

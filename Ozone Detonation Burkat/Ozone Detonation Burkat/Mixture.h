@@ -81,7 +81,7 @@ public:
      *
      * @param i порядковый номер вещества в массиве веществ.
      * @param t температура, К
-     * @return вычисленное значение энергии Гиббса, Дж кг-1.
+     * @return вычисленное значение энергии Гиббса, Дж кмоль-1.
      */
     RealType calculateSubstanceGibbsEnergy(int i, RealType t);
     /**

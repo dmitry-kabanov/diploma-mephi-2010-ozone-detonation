@@ -49,8 +49,8 @@ void RungeKuttaMethod::performIntegration(RealType afullTime)
 
 	prepareStiffl();
 
-    /*printHeadingToFile();
-    printToFile();*/
+    //printHeadingToFile();
+    //printToFile();
 
     // Производим интегрирование.
 		
@@ -164,17 +164,14 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf)
         nMoles--;
     }
 
-    // Переводим из Дж кг-1 в Дж кмоль-1.
-    q *= mixture->molecularWeight;
-
     // Константа равновесия.
     // Значение константы скорости обратной реакции получается с помощью 
     // константы скорости прямой реакции и константы равновесия.
-    RealType kp;
-    kp  = exp(-q / (mixture->R_J_OVER_KMOL_K * t));
-    kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
+    RealType kc;
+    kc  = exp(-q / (mixture->R_J_OVER_KMOL_K * t));
+    kc *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
 
-    return kf / kp;
+    return kf / kc;
 }
 
 void RungeKuttaMethod::printToFile()
@@ -246,9 +243,6 @@ int RungeKuttaMethod::DIFFUN(double **YY, double *F)
 	mixture->concentrations[1] = (Y[0])[1];
 	mixture->concentrations[2] = (Y[0])[2];
 	mixture->temperature = (Y[0])[3];
-
-    mixture->molecularWeight = mixture->calculateMolecularWeight();
-    mixture->pressure = mixture->calculatePressure();
 
 	k1f = calculateRateForForwardReaction(0);
 	k2f = calculateRateForForwardReaction(1);

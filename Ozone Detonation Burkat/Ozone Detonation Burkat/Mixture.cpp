@@ -225,10 +225,10 @@ RealType Mixture::calculateSubstanceEntropy(int i, RealType t)
     res += a[6];
     res *= R_J_OVER_KMOL_K / substances[i]->molecularWeight;
 
-    pressureDependentMember = R_J_OVER_KMOL_K / substances[i]->molecularWeight *
-        log(pressure / ONE_BAR);
+    //pressureDependentMember = R_J_OVER_KMOL_K / substances[i]->molecularWeight *
+    //    log(pressure / ONE_BAR);
 
-    res -= pressureDependentMember;
+    //res -= pressureDependentMember;
 
     return res;
 }
@@ -366,8 +366,26 @@ void Mixture::sumPolynomialCoeffs(RealType t)
 
 RealType Mixture::calculateSubstanceGibbsEnergy(int i, RealType t)
 {
-    return calculateSubstanceEnthalpy(i, t) - 
-        t * calculateSubstanceEntropy(i, t);
+    int numberOfTemperatureRange;
+    int j;
+
+    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
+        if (t <= substances[i]->temperatureHigh[j]) {
+            numberOfTemperatureRange = j;
+            break;
+        }
+        numberOfTemperatureRange = j;
+    }
+
+
+    RealType res = 0;
+    RealType *a = substances[i]->a[numberOfTemperatureRange];
+    res = a[0] * (1.0 - log(t)) - a[1] * t / 2.0 - a[2] * t * t / 6.0 -
+        a[3] * t * t * t / 12.0 - a[4] * t * t * t * t / 20.0 +
+        a[5] / t - a[6];
+    res *= R_J_OVER_KMOL_K  * t;
+
+    return res;
 }
 
 RealType Mixture::calculateMolecularWeight()
@@ -491,15 +509,15 @@ RealType Mixture::calculateInitialTemperature()
         k++;
 
         if (k > maxIterations) {
-            //cout << "Initial temperature function: " << 
-            //    "limit of iterations (" << maxIterations << 
-            //    ") was reached." << endl;
-            //cout << "Internal energy = " << fullEnergy << " J/kg" << endl;
-            //cout << "Density         = " << 1.0 / volume << endl;
-            //cout << "X(O)            = "  << volumeFractions[0] << endl;
-            //cout << "X(O2)           = "  << volumeFractions[1] << endl;
-            //cout << "X(O3)           = "  << volumeFractions[2] << endl;
-            //cout << "T = " << t << endl;
+            cout << "Initial temperature function: " << 
+                "limit of iterations (" << maxIterations << 
+                ") was reached." << endl;
+            cout << "Internal energy = " << fullEnergy << " J/kg" << endl;
+            cout << "Density         = " << 1.0 / volume << endl;
+            cout << "X(O)            = "  << volumeFractions[0] << endl;
+            cout << "X(O2)           = "  << volumeFractions[1] << endl;
+            cout << "X(O3)           = "  << volumeFractions[2] << endl;
+            cout << "T = " << t << endl;
             //exit(-1);
             return t;
         }
