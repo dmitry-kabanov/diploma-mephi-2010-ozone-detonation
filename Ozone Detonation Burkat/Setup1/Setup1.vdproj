@@ -4,9 +4,9 @@
 "ProjectType" = "8:{978C614F-708E-4E1A-B201-565925725DBA}"
 "IsWebType" = "8:FALSE"
 "ProjectName" = "8:Setup1"
-"LanguageId" = "3:1033"
-"CodePage" = "3:1252"
-"UILanguageId" = "3:1033"
+"LanguageId" = "3:1049"
+"CodePage" = "3:1251"
+"UILanguageId" = "3:1049"
 "SccProjectName" = "8:"
 "SccLocalPath" = "8:"
 "SccAuxPath" = "8:"
@@ -15,20 +15,20 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_24839D0A7BC34E89856DABBC5291ECA5"
-        "OwnerKey" = "8:_C0AE23E1A4674AB49958249215B5249A"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_C0AE23E1A4674AB49958249215B5249A"
-        "OwnerKey" = "8:_DFE58F698D79485E801108DF5265C1D1"
+        "MsmKey" = "8:_912063887C3E45BA9250854F726EEDEE"
+        "OwnerKey" = "8:_F52E5CCEEA8848FBBE09DD30FDAE0E43"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_DFE58F698D79485E801108DF5265C1D1"
         "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F52E5CCEEA8848FBBE09DD30FDAE0E43"
+        "OwnerKey" = "8:_DFE58F698D79485E801108DF5265C1D1"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -135,27 +135,27 @@
         }
         "MsiBootstrapper"
         {
-        "LangId" = "3:1033"
+        "LangId" = "3:1049"
         "RequiresElevation" = "11:FALSE"
         }
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Setup1"
+        "ProductName" = "8:Ozone Detonation"
         "ProductCode" = "8:{FEF9A217-671A-4C28-8F12-BEEBA1A8FDBE}"
-        "PackageCode" = "8:{D09DF553-6489-4BBA-85ED-53E13E87ADA5}"
+        "PackageCode" = "8:{C433F4A1-8FEE-4BD3-AAB7-2873046E5949}"
         "UpgradeCode" = "8:{F2C2C92C-48EC-45AA-A4E9-A193FF3C7C21}"
         "RestartWWWService" = "11:FALSE"
         "RemovePreviousVersions" = "11:FALSE"
         "DetectNewerInstalledVersion" = "11:TRUE"
         "InstallAllUsers" = "11:FALSE"
         "ProductVersion" = "8:1.0.0"
-        "Manufacturer" = "8:Microsoft"
+        "Manufacturer" = "8:Kabanov Dmitry"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:"
-        "Title" = "8:Setup1"
+        "Title" = "8:Ozone Detonation Installer"
         "Subject" = "8:"
-        "ARPCONTACT" = "8:Microsoft"
+        "ARPCONTACT" = "8:Kabanov Dmitry"
         "Keywords" = "8:"
         "ARPCOMMENTS" = "8:"
         "ARPURLINFOABOUT" = "8:"
@@ -658,11 +658,11 @@
         }
         "MergeModule"
         {
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_24839D0A7BC34E89856DABBC5291ECA5"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_912063887C3E45BA9250854F726EEDEE"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:microsoft_vc90_debugcrt_x86.msm"
+            "SourcePath" = "8:microsoft_vc90_crt_x86.msm"
                 "Properties"
                 {
                 }
@@ -672,11 +672,11 @@
             "Feature" = "8:"
             "IsolateTo" = "8:"
             }
-            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_C0AE23E1A4674AB49958249215B5249A"
+            "{CEE29DC0-9FBA-4B99-8D47-5BC643D9B626}:_F52E5CCEEA8848FBBE09DD30FDAE0E43"
             {
             "UseDynamicProperties" = "11:TRUE"
             "IsDependency" = "11:TRUE"
-            "SourcePath" = "8:policy_9_0_Microsoft_VC90_DebugCRT_x86.msm"
+            "SourcePath" = "8:policy_9_0_Microsoft_VC90_CRT_x86.msm"
                 "Properties"
                 {
                 }
