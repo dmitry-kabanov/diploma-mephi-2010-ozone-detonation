@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="windows-1251"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="9.00"
+	Version="9,00"
 	Name="Ozone Detonation Burkat"
 	ProjectGUID="{08A246F0-64AC-418A-800B-507F4029C4D4}"
 	RootNamespace="OzoneDetonation"

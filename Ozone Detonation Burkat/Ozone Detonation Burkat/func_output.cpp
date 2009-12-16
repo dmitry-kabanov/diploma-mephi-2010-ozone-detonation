@@ -6,6 +6,7 @@
 
 void outputAsCSVFile(int timeStep,
                      const int *cellNumbers,
+                     const RealType *x,
                      const RealType *xCenter,
                      const RealType *p,
                      const RealType *u,
@@ -30,13 +31,15 @@ void outputAsCSVFile(int timeStep,
     outFile.setf(std::ios::fixed, std::ios::floatfield);
     outFile.precision(9);
     
-    outFile << "Cell No;Coordinate (m);Pressure (Pa);Velocity (m/s);" <<
+    outFile << "Cell No;Right Bound(m);Coordinate (m);Pressure (Pa);Velocity (m/s);" <<
         "Density (kg m-3);Full energy (J kg-1);Internal Energy (J kg-1);" << 
         "X(O);X(O2);X(O3)" << 
         std::endl;
 
+    outFile << ";" << x[0] << std::endl;
     for (int i = 1; i < N; i++) {
         outFile << cellNumbers[i] << ";" <<
+            x[i]                  << ";" <<
             xCenter[i]            << ";" << 
             p[i]                  << ";" << 
             u[i]                  << ";" << 

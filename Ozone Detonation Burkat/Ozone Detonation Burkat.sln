@@ -3,6 +3,8 @@ Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Ozone Detonation Burkat", "Ozone Detonation Burkat\Ozone Detonation Burkat.vcproj", "{08A246F0-64AC-418A-800B-507F4029C4D4}"
 EndProject
+Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "Setup1", "Setup1\Setup1.vdproj", "{5D2D6C16-736B-4A5F-99F6-5778B08ADF7B}"
+EndProject
 Global
 	GlobalSection(SubversionScc) = preSolution
 		Svn-Managed = True
@@ -17,6 +19,8 @@ Global
 		{08A246F0-64AC-418A-800B-507F4029C4D4}.Debug|Win32.Build.0 = Debug|Win32
 		{08A246F0-64AC-418A-800B-507F4029C4D4}.Release|Win32.ActiveCfg = Release|Win32
 		{08A246F0-64AC-418A-800B-507F4029C4D4}.Release|Win32.Build.0 = Release|Win32
+		{5D2D6C16-736B-4A5F-99F6-5778B08ADF7B}.Debug|Win32.ActiveCfg = Debug
+		{5D2D6C16-736B-4A5F-99F6-5778B08ADF7B}.Release|Win32.ActiveCfg = Release
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

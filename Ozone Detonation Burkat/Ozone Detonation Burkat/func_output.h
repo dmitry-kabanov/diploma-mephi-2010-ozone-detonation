@@ -5,6 +5,7 @@
 
 void outputAsCSVFile(int timeStep,
                      const int *cellNumbers,
+                     const RealType *x,
                      const RealType *xCenter,
                      const RealType *p,
                      const RealType *u,
