@@ -10,7 +10,7 @@ const long double
     DX2 = 0.000001,
     
     // Шаг по времени, с.
-    DT  = 2.0e-11,
+    DT  = 1.0e-11,
     
     // Давление за ударной волной, Па.
     P1 = 6543160.0,
@@ -68,5 +68,8 @@ const bool EXACT_RIEMANN_SOLVER = true;
 
 // Точность нахождения давления на контактном разрыве.
 const long double EPSILON = 1e-10;
+
+const bool RESUME = false;
+const int START = 1;
 
 #endif

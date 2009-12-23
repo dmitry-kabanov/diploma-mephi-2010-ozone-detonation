@@ -22,6 +22,7 @@
 #include "RungeKuttaMethod.h"
 #include "Piston.h"
 #include "Stiffl1.h"
+#include "func_update.h"
 using namespace std;
 
 int main(/*int argc, char *argv[]*/)
@@ -149,30 +150,14 @@ int main(/*int argc, char *argv[]*/)
         rho_e_tg_left, rho_e_tg_right, rho_e_tg
     );
 
-    //RealType vf[3];
-    //vf[0] = 0.0;
-    //vf[1] = 0.0;
-    //vf[2] = 100.0;
+ //   RealType vf[3];
+ //   vf[2] = 100.0;
+ //   vf[1] = 0.0;
+ //   vf[0] = 0.0;
+ //   clock_t start;
+ //   clock_t finish;
+ //   double workingTime;
 
-    //ofstream outFile("T_Cp.txt");
-    //for (RealType t = 298; t < 3000; t += 1) {
-    //    kinetics.getMixture()->fillUpMixtureWithTAndP(t, ONE_ATM, vf);
-    //    outFile << t << " " << kinetics.getMixture()->calculateMixtureCp(t) << endl;
-    //}
-    //outFile.close();
-    //exit(0);
-    //RealType vf[2];
-    //vf[2] = 0.0;
-    //vf[1] = 92.8312;
-    //vf[0] = 7.16689;
-    //vf[2] = 100.0;
-    //vf[1] = 0.0;
-    //vf[0] = 0.0;
-    //clock_t start;
-    //clock_t finish;
-    //double workingTime;
- //   
- //////   kinetics.getMixture()->fillUpMixture(3297630, 3.58197, vf);
 	//start = clock();
  //   kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
  //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
@@ -197,8 +182,8 @@ int main(/*int argc, char *argv[]*/)
 	//vf[2] = 100.0;
  //   vf[1] = 0.0;
  //   vf[0] = 0.0;
-    
-    //kinetics.getMixture()->setStateWithURhoX(3297630, 3.58197, vf);
+ //   
+ //   kinetics.getMixture()->setStateWithURhoX(3297630, 3.58197, vf);
 	//start = clock();
  //   kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
  //   cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
@@ -216,21 +201,29 @@ int main(/*int argc, char *argv[]*/)
 	//workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
 
 	//cout << "Calculations done in " << workingTime << " s." << endl;
-    //exit(0);
+ //   exit(0);
 
     // ********************************************************************
     // ѕишем начальные значени€ в файл.
-    outputAsCSVFile(0, cells_numbers, x,
-        x_center, p, 
-        u, rho, 
-        e, u_energy, 
-        volumeFractions, shock_wave_front
-    );
+    if (! RESUME) {
+        outputAsCSVFile(0, cells_numbers, x,
+            x_center, p, 
+            u, rho, 
+            e, u_energy, 
+            volumeFractions, shock_wave_front
+        );
+    }
+
+    if (RESUME) {
+        update(x, x_center, m, rho, u, e, u_energy,
+            internal_energy, p, shock_wave_front, volumeFractions, gamma);
+        update_rho_u_and_rho_e(rho, u, internal_energy, rho_u, rho_e);
+    }
 
     /*
      * ќсновной цикл по времени
      */
-    for (j = 1; j <= TIMESTEPS; j++) {
+    for (j = START; j <= TIMESTEPS; j++) {
         for (i = 2; i < N; i++) {
             // —читаем тангенс дл€ rho на левой и правой границах €чейки.
             rho_tg_left[i] = (rho[i] - rho[i-1]) / (x_center[i] - x_center[i-1]);
