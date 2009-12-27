@@ -52,7 +52,11 @@ void Mixture::readFileOfSubstances(const char *filename)
     std::string word;
     std::fstream iFile;
 
-    iFile.open(filename, std::ios_base::in);    
+    iFile.open(filename, std::ios_base::in);
+    if (!iFile) {
+        cout << "Bad filename." << endl;
+        exit(1);
+    }
     iFile >> nSubstances >> ch;
 
     allocateMemoryForSubstances();

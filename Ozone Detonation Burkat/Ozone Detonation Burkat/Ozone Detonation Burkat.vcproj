@@ -99,6 +99,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="del &quot;$(OutDir)\*.txt&quot;&#x0D;&#x0A;copy &quot;$(ProjectDir)*.txt&quot; &quot;$(OutDir)&quot;"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"

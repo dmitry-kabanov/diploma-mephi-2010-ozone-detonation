@@ -212,6 +212,7 @@ int main(/*int argc, char *argv[]*/)
             e, u_energy, 
             volumeFractions, shock_wave_front
         );
+        
     }
 
     if (RESUME) {
@@ -219,7 +220,7 @@ int main(/*int argc, char *argv[]*/)
             internal_energy, p, shock_wave_front, volumeFractions, gamma);
         update_rho_u_and_rho_e(rho, u, internal_energy, rho_u, rho_e);
     }
-
+    
     /*
      * Основной цикл по времени
      */

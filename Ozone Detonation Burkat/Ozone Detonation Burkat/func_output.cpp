@@ -17,7 +17,7 @@ void outputAsCSVFile(int timeStep,
                      const bool *shockWaveVelocity)
 {
     int num_digits;
-    char time[32];
+    char time[32];    
     char filename[] = "Output\\data_";
     char file_ext[5] = ".csv";
     char fullname[64];
@@ -26,18 +26,16 @@ void outputAsCSVFile(int timeStep,
     strcpy_s(fullname, filename);
     strcat_s(fullname, time);
     strcat_s(fullname, file_ext);
-
     std::ofstream outFile(fullname);
-    outFile.setf(std::ios::fixed, std::ios::floatfield);
-    outFile.precision(9);
     
+/*    outFile.setf(std::ios::fixed, std::ios::floatfield);
+    outFile.precision(9);
     outFile << "Cell No;Right Bound(m);Coordinate (m);Pressure (Pa);Velocity (m/s);" <<
         "Density (kg m-3);Full energy (J kg-1);Internal Energy (J kg-1);" << 
         "X(O);X(O2);X(O3)" << 
         std::endl;
-
     outFile << ";" << x[0] << std::endl;
-    for (int i = 1; i < N; i++) {
+   for (int i = 1; i < N; i++) {
         outFile << cellNumbers[i] << ";" <<
             x[i]                  << ";" <<
             xCenter[i]            << ";" << 
@@ -54,6 +52,7 @@ void outputAsCSVFile(int timeStep,
             break;
         }
     }
-
-    outFile.close();
+    outFile.flush();    
+    outFile.close();*/
+    return;
 }
