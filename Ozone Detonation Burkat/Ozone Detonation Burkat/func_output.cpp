@@ -28,7 +28,7 @@ void outputAsCSVFile(int timeStep,
     strcat_s(fullname, file_ext);
     std::ofstream outFile(fullname);
     
-/*    outFile.setf(std::ios::fixed, std::ios::floatfield);
+    outFile.setf(std::ios::fixed, std::ios::floatfield);
     outFile.precision(9);
     outFile << "Cell No;Right Bound(m);Coordinate (m);Pressure (Pa);Velocity (m/s);" <<
         "Density (kg m-3);Full energy (J kg-1);Internal Energy (J kg-1);" << 
@@ -53,6 +53,6 @@ void outputAsCSVFile(int timeStep,
         }
     }
     outFile.flush();    
-    outFile.close();*/
+    outFile.close();
     return;
 }
