@@ -217,6 +217,10 @@
 				RelativePath=".\Substance.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TestConfig.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
