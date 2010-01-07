@@ -190,6 +190,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\GodunovKolganMethod.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -257,6 +261,10 @@
 			</File>
 			<File
 				RelativePath=".\func_update.h"
+				>
+			</File>
+			<File
+				RelativePath=".\GodunovKolganMethod.h"
 				>
 			</File>
 			<File
