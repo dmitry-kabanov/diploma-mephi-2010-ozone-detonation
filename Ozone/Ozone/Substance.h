@@ -26,7 +26,7 @@ public:
      */
     ~Substance();
     /**
-     * Названия веществ.
+     * Название вещества.
      */
     std::string nameOfSubstance;
     /**

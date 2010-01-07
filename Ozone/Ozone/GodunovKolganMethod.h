@@ -17,6 +17,7 @@
 #include "RealType.h"
 
 class StifflSolver;
+class Output;
 
 /**
  * Представляет собой решатель системы уравнений газовой динамики
@@ -41,6 +42,18 @@ public:
 	 * совместно с уравнениями химической кинетики.
 	 */
 	void run();
+
+	int *getCellNumbers() { return &cells_numbers[0]; }
+	RealType *getX() { return &x[0]; }
+	RealType *getXCenter() { return &x_center[0]; }
+	RealType *getP() { return &p[0]; }
+	RealType *getU() { return &u[0]; }
+	RealType *getRho() { return &rho[0]; }
+	RealType *getFullEnergy() { return &e[0]; }
+	RealType *getIntEnergy() { return &u_energy[0]; }
+	RealType **getMoleFractions() { return volumeFractions; }
+	bool *getShockWaveFront() { return shock_wave_front; }
+	int getMeshSize() const { return config_->getMeshSize(); }
 
 private:
 	/**
@@ -113,6 +126,7 @@ private:
 	bool *shock_wave_front;
 
 	StifflSolver *kinetics;
+	Output *plotter_;
 
 };
 

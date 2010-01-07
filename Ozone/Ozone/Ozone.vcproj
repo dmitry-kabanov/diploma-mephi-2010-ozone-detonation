@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\Output.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\Piston.cpp"
 				>
 			</File>
@@ -273,6 +277,10 @@
 			</File>
 			<File
 				RelativePath=".\Mixture.h"
+				>
+			</File>
+			<File
+				RelativePath=".\Output.h"
 				>
 			</File>
 			<File

@@ -11,6 +11,7 @@
 #include "GodunovKolganMethod.h"
 
 #include "constants.h"
+#include "Output.h"
 #include "StifflSolver.h"
 
 GodunovKolganMethod::GodunovKolganMethod(const Config &config)
@@ -32,6 +33,8 @@ GodunovKolganMethod::GodunovKolganMethod(const Config &config)
 		"Substances.txt",
 		"Reactions.txt",
 		"MoleFractions.txt");
+
+	plotter_ = new Output(*kinetics->getMixture(), "csv", "Output");
 
 	volumeFractions  = new RealType*[config_->getMeshSize()+1];
 	for (int i = 0; i <= config_->getMeshSize(); i++) {
@@ -192,6 +195,11 @@ void GodunovKolganMethod::init_()
 		rho_e_tg_right[i] = 0;
 		rho_e_tg[i]       = 0;
 	}
+
+	// Пишем начальные значения в файл.
+	if (! config_->getResume()) {
+		plotter_->plotData(0, *this);
+	}
 }
 
 void GodunovKolganMethod::resizeAllVectors()
@@ -241,4 +249,9 @@ void GodunovKolganMethod::resizeAllVectors()
 
 	rho_u.resize(n);
 	rho_e.resize(n);
+}
+
+void GodunovKolganMethod::run()
+{
+
 }
