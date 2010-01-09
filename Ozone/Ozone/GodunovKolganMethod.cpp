@@ -438,6 +438,7 @@ void GodunovKolganMethod::run()
 				u[i] = (m[i] * u[i] + delta_impulse[i]) / (m[i] + delta_mass);
 				e[i] = (m[i] * e[i] + delta_energy[i]) / (m[i] + delta_mass);
 				m[i] = m[i] + delta_mass;
+				frontCellNumber_ = i;
 			}
 			else if (shock_wave_front[i] == true && 
 				shock_wave_front[i+1] == false) {
@@ -477,54 +478,7 @@ void GodunovKolganMethod::run()
 		}
 
 		// ћодифицируем €чейки, св€занные с фронтом ударной волны.
-		for (i = 1; i < (N-1); i++) {
-			if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
-				if ((x[i+1] - x[i]) <= K * (x[i] - x[i-1])) {
-					RealType delta_x_right = x[i+2] - x[i+1];
-					RealType delta_x_left  = x[i+1] - x[i];
-					RealType delta_x_sum = delta_x_left + delta_x_right;
-					RealType temp_rho = rho[i+2];
-					RealType temp_x   = x[i];
-
-					rho[i+2] = 1 / delta_x_sum * 
-						(rho[i+2] * delta_x_right + 
-						rho[i+1] * delta_x_left);
-
-					m[i+2] = rho[i+2] * delta_x_sum;
-
-					u[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
-						(temp_rho * delta_x_right * u[i+2] + 
-						rho[i+1] * delta_x_left * u[i+1]);
-
-					e[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
-						(temp_rho * delta_x_right * e[i+2] + 
-						rho[i+1] * delta_x_left * e[i+1]);
-
-					// ƒелим €чейку слева от фронта ударной волны пополам.
-					p[i+1]   = p[i];
-					rho[i+1] = rho[i];
-					u[i+1]   = u[i];
-					e[i+1]   = e[i];
-					m[i+1]   = m[i] / 2.0;
-					m[i]     = m[i] / 2.0;
-
-					// ћодифицируем координаты границ и центров €чеек.
-					x[i]   = (x[i] + x[i-1]) / 2.0;
-					x[i+1] = temp_x;
-
-					x_center[i]   = (x[i-1] + x[i])   / 2.0;
-					x_center[i+1] = (x[i]   + x[i+1]) / 2.0;
-					x_center[i+2] = (x[i+1] + x[i+2]) / 2.0;
-
-					gamma[i+1] = gamma[i];
-
-					shock_wave_front[i]   = 0;
-					shock_wave_front[i+1] = true;
-					shock_wave_front[i+2] = true;
-				}
-				break;
-			}
-		}
+		modifyShockWaveFront_();
 	}
 }
 
@@ -550,4 +504,52 @@ RealType GodunovKolganMethod::calc_delta(RealType f_left,
 	}
 
 	return f_tg * (x_bound_r - x_bound_l) / 2.0;
+}
+
+void GodunovKolganMethod::modifyShockWaveFront_()
+{
+	int i = frontCellNumber_;
+	if ((x[i+1] - x[i]) <= K * (x[i] - x[i-1])) {
+		RealType delta_x_right = x[i+2] - x[i+1];
+		RealType delta_x_left  = x[i+1] - x[i];
+		RealType delta_x_sum = delta_x_left + delta_x_right;
+		RealType temp_rho = rho[i+2];
+		RealType temp_x   = x[i];
+
+		rho[i+2] = 1 / delta_x_sum * 
+			(rho[i+2] * delta_x_right + 
+			rho[i+1] * delta_x_left);
+
+		m[i+2] = rho[i+2] * delta_x_sum;
+
+		u[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
+			(temp_rho * delta_x_right * u[i+2] + 
+			rho[i+1] * delta_x_left * u[i+1]);
+
+		e[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
+			(temp_rho * delta_x_right * e[i+2] + 
+			rho[i+1] * delta_x_left * e[i+1]);
+
+		// ƒелим €чейку слева от фронта ударной волны пополам.
+		p[i+1]   = p[i];
+		rho[i+1] = rho[i];
+		u[i+1]   = u[i];
+		e[i+1]   = e[i];
+		m[i+1]   = m[i] / 2.0;
+		m[i]     = m[i] / 2.0;
+
+		// ћодифицируем координаты границ и центров €чеек.
+		x[i]   = (x[i] + x[i-1]) / 2.0;
+		x[i+1] = temp_x;
+
+		x_center[i]   = (x[i-1] + x[i])   / 2.0;
+		x_center[i+1] = (x[i]   + x[i+1]) / 2.0;
+		x_center[i+2] = (x[i+1] + x[i+2]) / 2.0;
+
+		gamma[i+1] = gamma[i];
+
+		shock_wave_front[i]   = 0;
+		shock_wave_front[i+1] = true;
+		shock_wave_front[i+2] = true;
+	}
 }

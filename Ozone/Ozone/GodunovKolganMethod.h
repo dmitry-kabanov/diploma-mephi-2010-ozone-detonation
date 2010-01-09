@@ -93,6 +93,14 @@ private:
 		RealType x_bound_l,
 		RealType x_bound_r);
 
+	/**
+	 * ћодифицирует €чейки слева и справа от фронта выдел€емой ударной волны.
+	 * ≈сли €чейка слева от фронта становитс€ много больше €чейки 
+	 * справа от фронта, то €чейка слева делитс€ пополам, а €чейка справа
+	 * объедин€етс€ со следующей за ней €чейкой.
+	 */
+	void modifyShockWaveFront_();
+
 	const Config *config_;
 	// ћассив номеров €чеек.
 	std::vector<int> cells_numbers;
@@ -146,6 +154,7 @@ private:
 
 	StifflSolver *kinetics;
 	Output *plotter_;
+	int frontCellNumber_;
 
 };
 
