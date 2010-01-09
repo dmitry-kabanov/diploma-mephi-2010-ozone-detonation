@@ -252,6 +252,7 @@ void GodunovKolganMethod::run()
 
 	for (int j = config_->getStart() + 1; 
 		j <= config_->getStart() + config_->getTimeSteps(); j++) {
+
 		for (i = 2; i < N; i++) {
 			// —читаем тангенс дл€ rho на левой и правой границах €чейки.
 			rho_delta[i] = calc_delta(rho[i-1], rho[i], rho[i+1], 
@@ -268,16 +269,6 @@ void GodunovKolganMethod::run()
 				x_center[i-1], x_center[i], x_center[i+1],
 				x[i-1], x[i]);
 
-			if (shock_wave_front[i] == true && shock_wave_front[i+1] == false)
-			{
-				break;
-			}
-		}
-		rho_delta[1]    = rho_delta[2];
-		rho_u_delta[1]  = rho_u_delta[2];
-		rho_e_delta[1]  = rho_e_delta[2];
-
-		for (i = 1; i < N; i++) {
 			rho_bound_r[i] = rho[i] + rho_delta[i];
 			rho_bound_l[i] = rho[i] - rho_delta[i];
 
@@ -304,6 +295,27 @@ void GodunovKolganMethod::run()
 				break;
 			}
 		}
+
+		rho_bound_r[1] = rho[1] + rho_delta[2];
+		rho_bound_l[1] = rho[1] - rho_delta[2];
+
+		rho_u_bound_r[1] = rho_u[1] + rho_u_delta[2];
+		rho_u_bound_l[1] = rho_u[1] - rho_u_delta[2];
+
+		rho_e_bound_r[1] = rho_e[1] + rho_e_delta[2];
+		rho_e_bound_l[1] = rho_e[1] - rho_e_delta[2];
+
+		// —читаем u на левой и правой границах €чейки.
+		u_bound_r[1] = rho_u_bound_r[1] / rho_bound_r[1];
+		u_bound_l[1] = rho_u_bound_l[1] / rho_bound_l[1];
+
+		// —читаем e на левой и правой границах €чейки.
+		e_bound_r[1] = rho_e_bound_r[1] / rho_bound_r[1];
+		e_bound_l[1] = rho_e_bound_l[1] / rho_bound_l[1];
+
+		// —читаем p на левой и правой границах €чейки.
+		p_bound_r[1] = rho_bound_r[1] * (gamma[1] - 1) * e_bound_r[1];
+		p_bound_l[1] = rho_bound_l[1] * (gamma[1] - 1) * e_bound_l[1];
 
 		// –ешаем задачу –имана.
 		for (i = 1; i < N; i++) {
