@@ -37,6 +37,9 @@ GodunovKolganMethod::GodunovKolganMethod(const Config &config)
 		"Reactions.txt",
 		"MoleFractions.txt");
 
+	piston = new Piston(config_->getPInitial(),
+		config_->getRhoInitial(),
+		"Piston.txt");
 	plotter_ = new Output(*kinetics->getMixture(), "csv", "Output");
 
 	volumeFractions  = new RealType*[config_->getMeshSize()+1];
@@ -52,6 +55,8 @@ GodunovKolganMethod::GodunovKolganMethod(const Config &config)
 GodunovKolganMethod::~GodunovKolganMethod()
 {
 	delete kinetics;
+	delete piston;
+	delete plotter_;
 	for (int i = 0; i <= config_->getMeshSize(); i++) {
 		delete [] volumeFractions[i];
 	}
@@ -409,7 +414,7 @@ void GodunovKolganMethod::run()
 		*/
 		// Ћева€ граница области расчета движетс€ со скоростью поршн€.
 		p_contact[0] = p[1];
-		u_contact[0] = piston.calculateVelocity(volumeFractions[1][2]);
+		u_contact[0] = piston->calculateVelocity(volumeFractions[1][2]);
 
 		/**
 		* —читаем импульс и энергию в €чейке.

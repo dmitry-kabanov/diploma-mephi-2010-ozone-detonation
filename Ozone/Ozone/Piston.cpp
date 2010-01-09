@@ -4,16 +4,20 @@
 #include "constants.h"
 using namespace std;
 
-Piston::Piston()
+Piston::Piston(RealType pInitial, 
+			   RealType rhoInitial, 
+			   const char *fileOfPistonData)
+:	pInitial_(pInitial),
+	rhoInitial_(rhoInitial)
 {
-    readFileOfPiston("Piston.txt");
+    readFileOfPiston(fileOfPistonData);
 }
 
 Piston::~Piston()
 {
-    delete [] pressures;
-    delete [] densities;
-    delete [] fractions;
+    delete [] pressures_;
+    delete [] densities_;
+    delete [] fractions_;
 }
 
 RealType Piston::calculateVelocity(RealType f)
@@ -21,10 +25,10 @@ RealType Piston::calculateVelocity(RealType f)
     RealType p;
     RealType rho;
 
-    for (int i = 0; i < nRows; ++i) {
-        if (f <= fractions[i]) {
-            p = pressures[i];
-            rho = densities[i];
+    for (int i = 0; i < nRows_; ++i) {
+        if (f <= fractions_[i]) {
+            p = pressures_[i];
+            rho = densities_[i];
             break;
         }
     }
@@ -32,18 +36,18 @@ RealType Piston::calculateVelocity(RealType f)
     return sqrt((p - P2) * (1 / RHO2 - 1 / rho));
 }
 
-void Piston::readFileOfPiston(const char* filename)
+void Piston::readFileOfPiston(const char* fileOfPistonData)
 {
-    ifstream iFile(filename);
+    ifstream iFile(fileOfPistonData);
     
-    iFile >> nRows;
+    iFile >> nRows_;
 
-    pressures = new RealType[nRows];
-    densities = new RealType[nRows];
-    fractions = new RealType[nRows];
+    pressures_ = new RealType[nRows_];
+    densities_ = new RealType[nRows_];
+    fractions_ = new RealType[nRows_];
 
-    for (int i = 0; i < nRows; ++i) {
-        iFile >> pressures[i] >> densities[i] >> fractions[i];
+    for (int i = 0; i < nRows_; ++i) {
+        iFile >> pressures_[i] >> densities_[i] >> fractions_[i];
     }
 
     iFile.close();

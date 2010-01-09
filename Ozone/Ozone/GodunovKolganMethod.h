@@ -74,7 +74,7 @@ private:
 
 	RealType shock_wave_velocity;
 	RealType delta_mass;
-	Piston piston;
+	Piston *piston;
 	std::vector<RealType> x;
 	std::vector<RealType> x_center;
 	std::vector<RealType> m;
