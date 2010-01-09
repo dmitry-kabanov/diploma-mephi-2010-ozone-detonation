@@ -10,6 +10,7 @@
 */
 #include "GodunovKolganMethod.h"
 
+#include <cmath>
 #include <iostream>
 #include "constants.h"
 #include "func_riemann_solver.h"
@@ -191,17 +192,9 @@ void GodunovKolganMethod::init_()
 	}
 
 	for (int i = 0; i <= N; i++) {
-		rho_tg_left[i]  = 0;
-		rho_tg_right[i] = 0;
-		rho_tg[i]       = 0;
-
-		rho_u_tg_left[i]  = 0;
-		rho_u_tg_right[i] = 0;
-		rho_u_tg[i]       = 0;
-
-		rho_e_tg_left[i]  = 0;
-		rho_e_tg_right[i] = 0;
-		rho_e_tg[i]       = 0;
+		rho_delta[i]   = 0;
+		rho_u_delta[i] = 0;
+		rho_e_delta[i] = 0;
 	}
 
 	// ѕишем начальные значени€ в файл.
@@ -245,15 +238,9 @@ void GodunovKolganMethod::resizeAllVectors()
 	rho_e_bound_r.resize(n);
 	rho_e_bound_l.resize(n);
 
-	rho_tg_left.resize(n);
-	rho_tg_right.resize(n);
-	rho_tg.resize(n);
-	rho_u_tg_left.resize(n);
-	rho_u_tg_right.resize(n);
-	rho_u_tg.resize(n);
-	rho_e_tg_left.resize(n);
-	rho_e_tg_right.resize(n);
-	rho_e_tg.resize(n);
+	rho_delta.resize(n);
+	rho_u_delta.resize(n);
+	rho_e_delta.resize(n);
 
 	rho_u.resize(n);
 	rho_e.resize(n);
@@ -267,64 +254,38 @@ void GodunovKolganMethod::run()
 		j <= config_->getStart() + config_->getTimeSteps(); j++) {
 		for (i = 2; i < N; i++) {
 			// —читаем тангенс дл€ rho на левой и правой границах €чейки.
-			rho_tg_left[i] = (rho[i] - rho[i-1]) / (x_center[i] - x_center[i-1]);
-			rho_tg_right[i] = (rho[i+1] - rho[i]) / (x_center[i+1] - x_center[i]);
-			if (abs(rho_tg_left[i]) > abs(rho_tg_right[i])) {
-				rho_tg[i] = rho_tg_right[i];
-			}
-			else {
-				rho_tg[i] = rho_tg_left[i];
-			}
+			rho_delta[i] = calc_delta(rho[i-1], rho[i], rho[i+1], 
+				x_center[i-1], x_center[i], x_center[i+1],
+				x[i-1], x[i]);
 
 			// —читаем тангенс дл€ rho*u на левой и правой границах €чейки.
-			rho_u_tg_left[i]  = (rho_u[i] - rho_u[i-1]) / 
-				(x_center[i] - x_center[i-1]);
-			rho_u_tg_right[i] = (rho_u[i+1] - rho_u[i]) / 
-				(x_center[i+1] - x_center[i]);
-			if (abs(rho_u_tg_left[i]) > abs(rho_u_tg_right[i])) {
-				rho_u_tg[i] = rho_u_tg_right[i];
-			}
-			else {
-				rho_u_tg[i] = rho_u_tg_left[i];
-			}
+			rho_u_delta[i] = calc_delta(rho_u[i-1], rho_u[i], rho_u[i+1],
+				x_center[i-1], x_center[i], x_center[i+1],
+				x[i-1], x[i]);
 
 			// —читаем тангенс дл€ rho*e на левой и правой границах €чейки.
-			rho_e_tg_left[i]  = (rho_e[i] - rho_e[i-1]) / (x_center[i] - x_center[i-1]);
-			rho_e_tg_right[i] = (rho_e[i+1] - rho_e[i]) / (x_center[i+1] - x_center[i]);
-			if (abs(rho_e_tg_left[i]) > abs(rho_e_tg_right[i])) {
-				rho_e_tg[i] = rho_e_tg_right[i];
-			}
-			else {
-				rho_e_tg[i] = rho_e_tg_left[i];
-			}
+			rho_e_delta[i] = calc_delta(rho_e[i-1], rho_e[i], rho_e[i+1],
+				x_center[i-1], x_center[i], x_center[i+1],
+				x[i-1], x[i]);
 
 			if (shock_wave_front[i] == true && shock_wave_front[i+1] == false)
 			{
 				break;
 			}
 		}
-
-		rho_tg_left[1]    = rho_tg_left[2];
-		rho_tg_right[1]   = rho_tg_right[2];
-		rho_tg[1]         = rho_tg[2];
-
-		rho_u_tg_left[1]  = rho_u_tg_left[2];
-		rho_u_tg_right[1] = rho_u_tg_right[2];
-		rho_u_tg[1]       = rho_u_tg[2];
-
-		rho_e_tg_left[1]  = rho_e_tg_left[2];
-		rho_e_tg_right[1] = rho_e_tg_right[2];
-		rho_e_tg[1]       = rho_e_tg[2];
+		rho_delta[1]    = rho_delta[2];
+		rho_u_delta[1]  = rho_u_delta[2];
+		rho_e_delta[1]  = rho_e_delta[2];
 
 		for (i = 1; i < N; i++) {
-			rho_bound_r[i] = rho[i] + (x[i] - x[i-1]) * rho_tg[i] / 2.0;
-			rho_bound_l[i] = rho[i] - (x[i] - x[i-1]) * rho_tg[i] / 2.0;            
+			rho_bound_r[i] = rho[i] + rho_delta[i];
+			rho_bound_l[i] = rho[i] - rho_delta[i];
 
-			rho_u_bound_r[i] = rho_u[i] + (x[i] - x[i-1]) * rho_u_tg[i] / 2.0;
-			rho_u_bound_l[i] = rho_u[i] - (x[i] - x[i-1]) * rho_u_tg[i] / 2.0;
+			rho_u_bound_r[i] = rho_u[i] + rho_u_delta[i];
+			rho_u_bound_l[i] = rho_u[i] - rho_u_delta[i];
 
-			rho_e_bound_r[i] = rho_e[i] + (x[i] - x[i-1]) * rho_e_tg[i] / 2.0;
-			rho_e_bound_l[i] = rho_e[i] - (x[i] - x[i-1]) * rho_e_tg[i] / 2.0;
+			rho_e_bound_r[i] = rho_e[i] + rho_e_delta[i];
+			rho_e_bound_l[i] = rho_e[i] - rho_e_delta[i];
 
 			// —читаем u на левой и правой границах €чейки.
 			u_bound_r[i] = rho_u_bound_r[i] / rho_bound_r[i];
@@ -488,7 +449,6 @@ void GodunovKolganMethod::run()
 					u[i] = (m[i] * u[i] + delta_impulse[i]) / (m[i] - delta_mass);
 					e[i] = (m[i] * e[i] + delta_energy[i]) / (m[i] - delta_mass);
 					m[i] = m[i] - delta_mass;
-					// cout << shock_wave_velocity << endl;
 					break;
 			}
 			else {
@@ -502,12 +462,12 @@ void GodunovKolganMethod::run()
 			rho[i] = m[i] / (x[i] - x[i-1]);
 			u_energy[i] = e[i] - u[i] * u[i] / 2.0;
 			kinetics->getMixture()->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
-			kinetics->performIntegration(DT);
+			//kinetics->performIntegration(DT);
 			kinetics->updateMoleFractions(volumeFractions[i]);
 			p[i] = kinetics->getPressure();
 			rho_u[i] = rho[i] * u[i];
 			gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
-			rho_e[i] = rho[i] * p[i] / ((gamma[i] - 1) * rho[i]);
+			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
 
 		if (j % TIMEDIVISOR == 0) {
@@ -552,9 +512,9 @@ void GodunovKolganMethod::run()
 					x[i]   = (x[i] + x[i-1]) / 2.0;
 					x[i+1] = temp_x;
 
-					//x_center[i]   = (x[i-1] + x[i])   / 2.0;
-					//x_center[i+1] = (x[i]   + x[i+1]) / 2.0;
-					//x_center[i+2] = (x[i+1] + x[i+2]) / 2.0;
+					x_center[i]   = (x[i-1] + x[i])   / 2.0;
+					x_center[i+1] = (x[i]   + x[i+1]) / 2.0;
+					x_center[i+2] = (x[i+1] + x[i+2]) / 2.0;
 
 					gamma[i+1] = gamma[i];
 
@@ -566,4 +526,28 @@ void GodunovKolganMethod::run()
 			}
 		}
 	}
+}
+
+RealType GodunovKolganMethod::calc_delta(RealType f_left, 
+	RealType f, 
+	RealType f_right, 
+	RealType x_center_left, 
+	RealType x_center, 
+	RealType x_center_right,
+	RealType x_bound_l,
+	RealType x_bound_r)
+{
+	RealType f_tg_left, f_tg_right, f_tg;
+
+	f_tg_left = (f - f_left) / (x_center - x_center_left);
+	f_tg_right = (f_right - f) / (x_center_right - x_center);
+
+	if (abs(f_tg_right) > abs(f_tg_left)) {
+		f_tg = f_tg_left;
+	}
+	else {
+		f_tg = f_tg_right;
+	}
+
+	return f_tg * (x_bound_r - x_bound_l) / 2.0;
 }

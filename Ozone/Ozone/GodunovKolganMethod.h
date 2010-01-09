@@ -68,6 +68,31 @@ private:
 	 */
 	void resizeAllVectors();
 
+	/**
+	 * ¬ычисл€ет приращение величины f на границах €чейки.
+	 * “ак как в методе √одуноваЧ олгана используетс€ линейна€ интерпол€ци€
+	 * газодинамических величин внутри €чейки, то необходимо найти приращение
+	 * величин на границах €чейки по сравнение со значением в центре €чейки.
+	 *
+	 * @param f_left			значение f в €чейке слева от текущей
+	 * @param f					значение f в текущей €чейке
+	 * @param f_right			значение f в €чейке справа от текущей
+	 * @param x_center_left		координата центра €чейки слева от текущей
+	 * @param x_center			координата центра текущей €чейки
+	 * @param x_center_right	координата центра €чейки справа от текущей
+	 * @param x_bound_l			координата левой границы текущей €чейки
+	 * @param x_bound_r			координата правой границы текущей €чейки
+	 * @return					приращение величины f
+	 */
+	RealType calc_delta(RealType f_left,
+		RealType f,
+		RealType f_right,
+		RealType x_center_left,
+		RealType x_center,
+		RealType x_center_right,
+		RealType x_bound_l,
+		RealType x_bound_r);
+
 	const Config *config_;
 	// ћассив номеров €чеек.
 	std::vector<int> cells_numbers;
@@ -106,15 +131,9 @@ private:
 	std::vector<RealType> rho_e_bound_r;
 	std::vector<RealType> rho_e_bound_l;
 
-	std::vector<RealType> rho_tg_left;
-	std::vector<RealType> rho_tg_right;
-	std::vector<RealType> rho_tg;
-	std::vector<RealType> rho_u_tg_left;
-	std::vector<RealType> rho_u_tg_right;
-	std::vector<RealType> rho_u_tg;
-	std::vector<RealType> rho_e_tg_left;
-	std::vector<RealType> rho_e_tg_right;
-	std::vector<RealType> rho_e_tg;
+	std::vector<RealType> rho_delta;
+	std::vector<RealType> rho_u_delta;
+	std::vector<RealType> rho_e_delta;
 
 	std::vector<RealType> rho_u;
 	std::vector<RealType> rho_e;
