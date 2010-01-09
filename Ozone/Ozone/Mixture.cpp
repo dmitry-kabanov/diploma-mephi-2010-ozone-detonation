@@ -219,7 +219,6 @@ RealType Mixture::calculateSubstanceEntropy(int i, RealType t)
 
 
     RealType res = 0;
-    RealType pressureDependentMember = 0;
     RealType *a = substances[i]->a[numberOfTemperatureRange];
 
     res += a[0] * log(t);
@@ -228,11 +227,6 @@ RealType Mixture::calculateSubstanceEntropy(int i, RealType t)
     }
     res += a[6];
     res *= R_J_OVER_KMOL_K / substances[i]->molecularWeight;
-
-    //pressureDependentMember = R_J_OVER_KMOL_K / substances[i]->molecularWeight *
-    //    log(pressure / ONE_BAR);
-
-    //res -= pressureDependentMember;
 
     return res;
 }

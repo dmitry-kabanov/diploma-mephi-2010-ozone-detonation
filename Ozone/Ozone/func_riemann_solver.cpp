@@ -4,6 +4,13 @@
 #include "constants.h"
 #include "func_riemann_solver.h"
 
+// ‘лаг, определ€ющий, решаетс€ ли задача –имана точно (значение true)
+// или же в акустическом приближении.
+const bool EXACT_RIEMANN_SOLVER = true;
+
+// “очность нахождени€ давлени€ на контактном разрыве.
+const long double EPSILON = 1e-10;
+
 long double p0 = 0;
 
 long double calc_c(long double p, long double rho, RealType gamma)

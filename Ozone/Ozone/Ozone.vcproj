@@ -111,7 +111,7 @@
 				EnableIntrinsicFunctions="true"
 				RuntimeLibrary="2"
 				EnableFunctionLevelLinking="true"
-				WarningLevel="3"
+				WarningLevel="4"
 				DebugInformationFormat="3"
 			/>
 			<Tool
@@ -163,22 +163,6 @@
 			>
 			<File
 				RelativePath=".\Config.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\func_delta.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\func_in_time_array.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\func_init.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\func_output.cpp"
 				>
 			</File>
 			<File
@@ -241,22 +225,6 @@
 			</File>
 			<File
 				RelativePath=".\constants.h"
-				>
-			</File>
-			<File
-				RelativePath=".\func_delta.h"
-				>
-			</File>
-			<File
-				RelativePath=".\func_in_time_array.h"
-				>
-			</File>
-			<File
-				RelativePath=".\func_init.h"
-				>
-			</File>
-			<File
-				RelativePath=".\func_output.h"
 				>
 			</File>
 			<File

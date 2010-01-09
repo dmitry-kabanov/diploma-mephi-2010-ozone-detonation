@@ -22,8 +22,8 @@ Piston::~Piston()
 
 RealType Piston::calculateVelocity(RealType f)
 {
-    RealType p;
-    RealType rho;
+    RealType p = pInitial_;
+    RealType rho = rhoInitial_;
 
     for (int i = 0; i < nRows_; ++i) {
         if (f <= fractions_[i]) {
@@ -33,7 +33,7 @@ RealType Piston::calculateVelocity(RealType f)
         }
     }
 
-    return sqrt((p - P2) * (1 / RHO2 - 1 / rho));
+    return sqrt((p - pInitial_) * (1 / rhoInitial_ - 1 / rho));
 }
 
 void Piston::readFileOfPiston(const char* fileOfPistonData)

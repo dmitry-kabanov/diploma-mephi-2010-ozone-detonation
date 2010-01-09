@@ -69,13 +69,16 @@ void GodunovKolganMethod::init_()
 {
 	int i;
 
+	dt = config_->getDt();
+	meshSize_ = config_->getMeshSize();
+
 	resizeAllVectors();
 
 	for (i = 0; i <= config_->getMeshSize(); i++) {
 		shock_wave_front[i] = false;
 	}
 
-	for (i = 0; i <= N; i++) {
+	for (i = 0; i <= meshSize_; i++) {
 		cells_numbers[i] = i;
 	}
 
@@ -88,23 +91,18 @@ void GodunovKolganMethod::init_()
 	p[0]        = 0;
 	rho_u[0]    = 0;
 
-	for (int i = 1; i <= N; i++) {
-		if (i <= L) {
-			x[i] = x[i-1] + DX1;
-		}
-		else {
-			x[i] = x[i-1] + DX2;
-		}
+	for (int i = 1; i <= meshSize_; i++) {
+		x[i] = x[i-1] + config_->getDx();
 
-		if (i <= L) {
-			p[i]   = P1;
-			rho[i] = RHO1;
-			u[i]   = U1;
+		if (i <= config_->getInitialShockWaveSize()) {
+			p[i]   = config_->getPFront();
+			rho[i] = config_->getRhoFront();
+			u[i]   = config_->getUFront();
 		}
 		else {
-			p[i]   = P2;
-			rho[i] = RHO2;
-			u[i]   = U2;
+			p[i]   = config_->getPInitial();
+			rho[i] = config_->getRhoInitial();
+			u[i]   = config_->getUInitial();
 		}
 
 		m[i] = (x[i] - x[i-1]) * rho[i];
@@ -113,23 +111,23 @@ void GodunovKolganMethod::init_()
 		rho_u[i] = rho[i] * u[i];
 	}
 
-	shock_wave_front[L]   = true;
-	shock_wave_front[L+1] = true;
+	shock_wave_front[config_->getInitialShockWaveSize()]   = true;
+	shock_wave_front[config_->getInitialShockWaveSize()+1] = true;
 
-	for (int i = 0; i <= N; i++) {
-		if (i <= L) {
-			gamma[i] = GAMMA_BEHIND_FRONT;
+	for (int i = 0; i <= meshSize_; i++) {
+		if (i <= config_->getInitialShockWaveSize()) {
+			gamma[i] = config_->getGammaBehindFront();
 		} else {
-			gamma[i] = GAMMA_AHEAD_FRONT;
+			gamma[i] = config_->getGammaAheadFront();
 		}
 	}
 
-	for (int i = 0; i <= L; i++) {
+	for (int i = 0; i <= config_->getInitialShockWaveSize(); i++) {
 		volumeFractions[i][0] = 0.0;
 		volumeFractions[i][1] = 0.0;
 		volumeFractions[i][2] = 100.0;
 	}
-	for (int i = L+1; i <= N; i++) {
+	for (int i = config_->getInitialShockWaveSize()+1; i <= meshSize_; i++) {
 		volumeFractions[i][0] = 0.0;
 		volumeFractions[i][1] = 0.0;
 		volumeFractions[i][2] = 100.0;
@@ -144,12 +142,12 @@ void GodunovKolganMethod::init_()
 	// ћолекул€рный вес смеси, кг кмоль-1.
 	RealType mw;
 
-	for (int i = 1; i <= N; i++) {
-		if (i <= L) {
-			internal_energy[i] = p[i] / ((GAMMA_BEHIND_FRONT - 1) * rho[i]);
+	for (int i = 1; i <= meshSize_; i++) {
+		if (i <= config_->getInitialShockWaveSize()) {
+			internal_energy[i] = p[i] / ((config_->getGammaBehindFront() - 1) * rho[i]);
 		}
 		else {
-			internal_energy[i] = p[i] / ((GAMMA_AHEAD_FRONT - 1) * rho[i]);
+			internal_energy[i] = p[i] / ((config_->getGammaAheadFront() - 1) * rho[i]);
 		}
 
 		kinetics->getMixture()->setVolumeFractions(volumeFractions[i]);
@@ -165,18 +163,18 @@ void GodunovKolganMethod::init_()
 
 	rho_e[0] = 0.0;
 
-	for (int i = 1; i <= N; i++) {
+	for (int i = 1; i <= meshSize_; i++) {
 		rho_e[i] = rho[i] * internal_energy[i];
 	}
 
-	for (int i = 0; i <= N; i++) {
+	for (int i = 0; i <= meshSize_; i++) {
 		p_contact[i] = p[i];
 		u_contact[i] = u[i];
 		delta_impulse[i] = 0;
 		delta_energy[i] = 0;
 	}
 
-	for (int i = 0; i <= N; i++) {
+	for (int i = 0; i <= meshSize_; i++) {
 		rho_bound_r[i] = 0;
 		rho_bound_l[i] = 0;
 		rho_u_bound_r[i] = 0;
@@ -191,7 +189,7 @@ void GodunovKolganMethod::init_()
 		p_bound_l[i] = 0;
 	}
 
-	for (int i = 0; i <= N; i++) {
+	for (int i = 0; i <= meshSize_; i++) {
 		rho_delta[i]   = 0;
 		rho_u_delta[i] = 0;
 		rho_e_delta[i] = 0;
@@ -253,7 +251,7 @@ void GodunovKolganMethod::run()
 	for (int j = config_->getStart() + 1; 
 		j <= config_->getStart() + config_->getTimeSteps(); j++) {
 
-		for (i = 2; i < N; i++) {
+		for (i = 2; i < meshSize_; i++) {
 			// —читаем тангенс дл€ rho на левой и правой границах €чейки.
 			rho_delta[i] = calc_delta(rho[i-1], rho[i], rho[i+1], 
 				x_center[i-1], x_center[i], x_center[i+1],
@@ -318,7 +316,7 @@ void GodunovKolganMethod::run()
 		p_bound_l[1] = rho_bound_l[1] * (gamma[1] - 1) * e_bound_l[1];
 
 		// –ешаем задачу –имана.
-		for (i = 1; i < N; i++) {
+		for (i = 1; i < meshSize_; i++) {
 			/*
 			* ‘ронт ударной волны, которую мы выдел€ем, 
 			* находитс€ на правой границе i-й €чейки.
@@ -331,18 +329,18 @@ void GodunovKolganMethod::run()
 			if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
 				p_contact[i] = calc_p_contact(p[i], p[i+1],
 					rho[i], rho[i+1],
-					u[i], u[i+1], GAMMA_FRONT
+					u[i], u[i+1], config_->getGammaInsideFront()
 					);
 				u_contact[i] = calc_u_contact(p_contact[i],
 					p[i], p[i+1],
 					rho[i], rho[i+1],
-					u[i], u[i+1], GAMMA_FRONT
+					u[i], u[i+1], config_->getGammaInsideFront()
 					);
 				shock_wave_velocity = calc_shock_wave_velocity(
 					p_contact[i], u_contact[i],
 					p[i], p[i+1],
 					rho[i], rho[i+1],
-					u[i], u[i+1], GAMMA_FRONT
+					u[i], u[i+1], config_->getGammaInsideFront()
 					);
 				if (shock_wave_velocity == 0) {
 					cout << "Shock wave velocity is equals to 0." << endl;
@@ -357,12 +355,12 @@ void GodunovKolganMethod::run()
 			else if (shock_wave_front[i] == false && shock_wave_front[i+1] == true) {
 				p_contact[i] = calc_p_contact(p_bound_r[i], p[i+1],
 					rho_bound_r[i], rho[i+1],
-					u_bound_r[i], u[i+1], GAMMA_BEHIND_FRONT
+					u_bound_r[i], u[i+1], config_->getGammaBehindFront()
 					);
 				u_contact[i] = calc_u_contact(p_contact[i],
 					p_bound_r[i], p[i+1],
 					rho_bound_r[i], rho[i+1],
-					u_bound_r[i], u[i+1], GAMMA_BEHIND_FRONT
+					u_bound_r[i], u[i+1], config_->getGammaBehindFront()
 					);
 			}
 			/*
@@ -374,10 +372,10 @@ void GodunovKolganMethod::run()
 			else {
 				p_contact[i] = calc_p_contact(p_bound_r[i], p_bound_l[i+1],
 					rho_bound_r[i], rho_bound_l[i+1],
-					u_bound_r[i], u_bound_l[i+1], GAMMA_BEHIND_FRONT);
+					u_bound_r[i], u_bound_l[i+1], config_->getGammaBehindFront());
 				u_contact[i] = calc_u_contact(p_contact[i], p_bound_r[i], p_bound_l[i+1],
 					rho_bound_r[i], rho_bound_l[i+1],
-					u_bound_r[i], u_bound_l[i+1], GAMMA_BEHIND_FRONT);
+					u_bound_r[i], u_bound_l[i+1], config_->getGammaBehindFront());
 			}
 		}
 
@@ -392,18 +390,18 @@ void GodunovKolganMethod::run()
 		/**
 		* —читаем импульс и энергию в €чейке.
 		*/
-		for (i = 1; i < N; i++) {
+		for (i = 1; i < meshSize_; i++) {
 			/*
 			* ‘ронт ударной волны, которую мы выдел€ем, 
 			* находитс€ на правой границе i-й €чейки.
 			*/
 			if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
-				delta_mass = (shock_wave_velocity - u[i+1]) * rho[i+1] * DT;
+				delta_mass = (shock_wave_velocity - u[i+1]) * rho[i+1] * dt;
 
-				delta_impulse[i] = p_contact[i-1] * DT + 
-					delta_mass * u[i+1] - p[i+1] * DT;
-				delta_energy[i]  = p_contact[i-1] * u_contact[i-1] * DT + 
-					delta_mass * e[i+1] - p[i+1] * u[i+1] * DT;
+				delta_impulse[i] = p_contact[i-1] * dt + 
+					delta_mass * u[i+1] - p[i+1] * dt;
+				delta_energy[i]  = p_contact[i-1] * u_contact[i-1] * dt + 
+					delta_mass * e[i+1] - p[i+1] * u[i+1] * dt;
 			}
 			/*
 			* ‘ронт ударной волны, которую мы выдел€ем, 
@@ -416,11 +414,11 @@ void GodunovKolganMethod::run()
 				&& shock_wave_front[i+1] == false) {
 
 					delta_impulse[i] = - delta_mass * u[i] + 
-						p[i] * DT - 
-						p_contact[i] * DT;
+						p[i] * dt - 
+						p_contact[i] * dt;
 					delta_energy[i]  = - delta_mass * e[i] + 
-						+ p[i] * u[i] * DT -
-						p_contact[i] * u_contact[i] * DT;
+						+ p[i] * u[i] * dt -
+						p_contact[i] * u_contact[i] * dt;
 					break;
 			}
 			/*
@@ -429,24 +427,24 @@ void GodunovKolganMethod::run()
 			* —читаем импульс и энергию обычным способом.
 			*/
 			else {
-				delta_impulse[i] = p_contact[i-1] * DT -
-					p_contact[i] * DT;
-				delta_energy[i]  = p_contact[i-1] * u_contact[i-1] * DT - 
-					p_contact[i] * u_contact[i] * DT;
+				delta_impulse[i] = p_contact[i-1] * dt -
+					p_contact[i] * dt;
+				delta_energy[i]  = p_contact[i-1] * u_contact[i-1] * dt - 
+					p_contact[i] * u_contact[i] * dt;
 			}
 		}
 
 		// Ћева€ граница области расчета движетс€ со скоростью поршн€.
-		x[0] = x[0] + u_contact[0] * DT;
+		x[0] = x[0] + u_contact[0] * dt;
 
 		// ¬ычисл€ем основные величины.
-		for (i = 1; i <= N; i++) {
+		for (i = 1; i <= meshSize_; i++) {
 			if (shock_wave_front[i] == true && shock_wave_front[i+1] == true) {
 				// ‘ронт ударной волны, которую мы выдел€ем, 
 				// находитс€ на правой границе i-й €чейки.
 				// —читаем изменение массы в i-й €чейке.
 				// ѕрава€ граница i-й €чейки движетс€ со скоростью ударной волны.
-				x[i] = x[i] + shock_wave_velocity * DT;
+				x[i] = x[i] + shock_wave_velocity * dt;
 				u[i] = (m[i] * u[i] + delta_impulse[i]) / (m[i] + delta_mass);
 				e[i] = (m[i] * e[i] + delta_energy[i]) / (m[i] + delta_mass);
 				m[i] = m[i] + delta_mass;
@@ -457,7 +455,7 @@ void GodunovKolganMethod::run()
 					// i-€ €чейка содержит выдел€емую 
 					// ударную волну на левой границе.
 					// ≈Є права€ граница движетс€ со скоростью контактного разрыва.
-					x[i] = x[i] + u_contact[i] * DT;
+					x[i] = x[i] + u_contact[i] * dt;
 					x_center[i] = (x[i-1] + x[i]) / 2.0;
 					u[i] = (m[i] * u[i] + delta_impulse[i]) / (m[i] - delta_mass);
 					e[i] = (m[i] * e[i] + delta_energy[i]) / (m[i] - delta_mass);
@@ -466,7 +464,7 @@ void GodunovKolganMethod::run()
 			}
 			else {
 				// ячейка не содержит выдел€емую ударную волну.
-				x[i] = x[i] + u_contact[i] * DT;
+				x[i] = x[i] + u_contact[i] * dt;
 				u[i] = (m[i] * u[i] + delta_impulse[i]) / m[i];
 				e[i] = (m[i] * e[i] + delta_energy[i]) / m[i];
 			}
@@ -483,7 +481,7 @@ void GodunovKolganMethod::run()
 			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
 
-		if (j % TIMEDIVISOR == 0) {
+		if (j % config_->getTimeStepForOutput() == 0) {
 			cout << "j = " << j << endl;
 			cout << "D = " << shock_wave_velocity << endl << endl;
 			plotter_->plotData(j, *this);
@@ -521,7 +519,8 @@ RealType GodunovKolganMethod::calc_delta(RealType f_left,
 void GodunovKolganMethod::modifyShockWaveFront_()
 {
 	int i = frontCellNumber_;
-	if ((x[i+1] - x[i]) <= K * (x[i] - x[i-1])) {
+
+	if ((x[i+1] - x[i]) <= config_->getCellWidthCoeff() * (x[i] - x[i-1])) {
 		RealType delta_x_right = x[i+2] - x[i+1];
 		RealType delta_x_left  = x[i+1] - x[i];
 		RealType delta_x_sum = delta_x_left + delta_x_right;

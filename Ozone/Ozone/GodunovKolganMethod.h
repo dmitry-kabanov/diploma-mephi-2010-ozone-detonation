@@ -155,6 +155,14 @@ private:
 	StifflSolver *kinetics;
 	Output *plotter_;
 	int frontCellNumber_;
+	/**
+	 * Шаг по времени, с.
+	 */
+	RealType dt;
+	/**
+	 * Размер разностной сетки.
+	 */
+	int meshSize_;
 
 };
 
