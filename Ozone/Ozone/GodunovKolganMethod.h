@@ -119,7 +119,7 @@ private:
 	std::vector<RealType> internal_energy;
 	std::vector<RealType> u_energy;
 	std::vector<RealType> e;
-	std::vector<RealType> temperature;
+	std::vector<RealType> deltaTemperature;
 	std::vector<RealType> gamma;
 	std::vector<RealType> p_contact;
 	std::vector<RealType> u_contact;

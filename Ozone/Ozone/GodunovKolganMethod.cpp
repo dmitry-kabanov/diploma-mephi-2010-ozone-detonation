@@ -216,7 +216,7 @@ void GodunovKolganMethod::resizeAllVectors()
 	internal_energy.resize(n);
 	u_energy.resize(n);
 	e.resize(n);
-	temperature.resize(n);
+	deltaTemperature.resize(n);
 	gamma.resize(n);
 	p_contact.resize(n);
 	u_contact.resize(n);
@@ -473,7 +473,9 @@ void GodunovKolganMethod::run()
 			rho[i] = m[i] / (x[i] - x[i-1]);
 			u_energy[i] = e[i] - u[i] * u[i] / 2.0;
 			kinetics->getMixture()->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
-			//kinetics->performIntegration(DT);
+			kinetics->performIntegration(dt);
+			deltaTemperature[i] = kinetics->getMixture()->getOldTemperature() -
+				kinetics->getMixture()->getTemperature();
 			kinetics->updateMoleFractions(volumeFractions[i]);
 			p[i] = kinetics->getPressure();
 			rho_u[i] = rho[i] * u[i];
@@ -483,7 +485,18 @@ void GodunovKolganMethod::run()
 
 		if (j % config_->getTimeStepForOutput() == 0) {
 			cout << "j = " << j << endl;
-			cout << "D = " << shock_wave_velocity << endl << endl;
+			cout << "D = " << shock_wave_velocity << endl;
+
+			RealType maxdT = deltaTemperature[1];
+			for (i = 2; i < meshSize_; i++) {
+				if (maxdT < deltaTemperature[i]) {
+					maxdT = deltaTemperature[i];
+				}
+				if (shock_wave_front[i] == true) {
+					break;
+				}
+			}
+			cout << "Max dT = " << maxdT << endl << endl;;
 			plotter_->plotData(j, *this);
 		}
 
