@@ -496,7 +496,8 @@ void GodunovKolganMethod::run()
 					break;
 				}
 			}
-			cout << "Max dT = " << maxdT << endl << endl;;
+			cout << "Max dT = " << maxdT << endl << endl;
+			modifyMesh();
 			plotter_->plotData(j, *this);
 		}
 
@@ -575,5 +576,99 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 		shock_wave_front[i]   = 0;
 		shock_wave_front[i+1] = true;
 		shock_wave_front[i+2] = true;
+	}
+}
+
+void GodunovKolganMethod::modifyMesh()
+{
+	int reaction_start = 0;
+	int i;
+	RealType dx_left;
+	RealType dx_right;
+	RealType dx_new;
+	RealType rho_new;
+	int offset;
+
+	for (i = 1; i < meshSize_; i++) {
+		if (volumeFractions[i][2] >= 0.01) {
+			break;
+		}
+		else {
+			reaction_start = i;
+		}
+	}
+
+	if (reaction_start == 0) {
+		cout << "No modifying of the mesh." << endl;
+		return;
+	}
+
+	if (reaction_start % 2 != 0) {
+		reaction_start--;
+	}
+
+	for (i = 1; i < reaction_start; i += 2) {
+		dx_left = x[i] - x[i-1];
+		dx_right = x[i+1] - x[i];
+		dx_new = dx_left + dx_right;
+		x_center[i] = (x[i-1] + x[i+1]) / 2.0;
+
+		rho_new = (rho[i] * dx_left + rho[i+1] * dx_right) / dx_new;
+		m[i] = rho_new * dx_new;
+		u[i] = (rho[i] * dx_left * u[i] + rho[i+1] * dx_right * u[i+1]) /
+			m[i];
+		e[i] = (rho[i] * dx_left * e[i] + rho[i+1] * dx_right * e[i+1]) /
+			m[i];
+		rho[i] = rho_new;
+		u_energy[i] = e[i] - u[i] * u[i] / 2.0;
+		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
+			volumeFractions[i][j] = (volumeFractions[i][j] + 
+				volumeFractions[i+1][j]) * 0.5;
+		}
+		kinetics->getMixture()->setStateWithURhoX(u_energy[i], 
+			rho[i], 
+			volumeFractions[i]);
+		p[i] = kinetics->getPressure();
+		x[i] = x[i+1];
+		rho_u[i] = rho[i] * u[i];
+		rho_e[i] = p[i] / (gamma[i] - 1);
+	}
+
+	// Переиндексируем сетку.
+	for (i = 2; i <= reaction_start / 2; i++) {
+		offset = i + i - 1;
+		m[i] = m[offset];
+		u[i] = u[offset];
+		e[i] = e[offset];
+		rho[i] = rho[offset];
+		u_energy[i] = u_energy[offset];
+		p[i] = p[offset];
+		x[i] = x[offset];
+		x_center[i] = x_center[offset];
+		rho_u[i] = rho_u[i+offset];
+		rho_e[i] = rho_e[i+offset];
+		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
+			volumeFractions[i][j] = volumeFractions[offset][j];
+		}
+	}
+
+	offset = reaction_start / 2;
+	meshSize_ -= offset;
+	for (i = reaction_start / 2 + 1; i < meshSize_; i++) {
+		m[i] = m[i+offset];
+		u[i] = u[i+offset];
+		e[i] = e[i+offset];
+		rho[i] = rho[i+offset];
+		u_energy[i] = u_energy[i+offset];
+		p[i] = p[i+offset];
+		x[i] = x[i+offset];
+		x_center[i] = x[i + offset];
+		rho_u[i] = rho_u[i+offset];
+		rho_e[i] = rho_e[i+offset];
+		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
+			volumeFractions[i][j] = volumeFractions[i+offset][j];
+		}
+		shock_wave_front[i] = shock_wave_front[i+offset];
+		gamma[i] = gamma[i+offset];
 	}
 }

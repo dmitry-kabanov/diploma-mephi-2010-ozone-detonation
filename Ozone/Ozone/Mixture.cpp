@@ -181,7 +181,7 @@ void Mixture::allocateMemoryForReactions()
 
 RealType Mixture::calculateSubstanceEnthalpy(int i, RealType t)
 {
-    int numberOfTemperatureRange;
+    int numberOfTemperatureRange = 0;
     int j;
 
     for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
@@ -316,7 +316,7 @@ RealType Mixture::calculateCp(RealType t)
 
 RealType Mixture::calculateSubstanceCp(int i, RealType t)
 {
-    int nInt;
+    int nInt = 0;
     int j;
 
     for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
@@ -364,7 +364,7 @@ void Mixture::sumPolynomialCoeffs(RealType t)
 
 RealType Mixture::calculateSubstanceGibbsEnergy(int i, RealType t)
 {
-    int numberOfTemperatureRange;
+    int numberOfTemperatureRange = 0;
     int j;
 
     for (j = 0; j < substances[i]->nTemperatureRanges; j++) {

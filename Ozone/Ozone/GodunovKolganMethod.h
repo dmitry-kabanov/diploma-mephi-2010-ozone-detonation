@@ -101,6 +101,11 @@ private:
 	 */
 	void modifyShockWaveFront_();
 
+	/**
+	 * ќбъедин€ет €чейки за зоной реакции.
+	 */
+	void modifyMesh();
+
 	const Config *config_;
 	// ћассив номеров €чеек.
 	std::vector<int> cells_numbers;
