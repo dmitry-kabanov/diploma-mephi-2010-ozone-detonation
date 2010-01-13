@@ -37,6 +37,7 @@ GodunovKolganMethod::GodunovKolganMethod(const Config &config)
 		"Substances.txt",
 		"Reactions.txt",
 		"MoleFractions.txt");
+	kinetics->Seteps(1e-2);
 
 	piston = new Piston(config_->getPInitial(),
 		config_->getRhoInitial(),
@@ -202,6 +203,7 @@ void GodunovKolganMethod::init_()
 	else
 	{
 		update_();
+		cout << "Starting from time step " << config_->getStart() << endl;
 	}
 }
 
