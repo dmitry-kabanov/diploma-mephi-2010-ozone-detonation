@@ -53,20 +53,20 @@ void StifflSolver::performIntegration(RealType afullTime)
 
     // Производим интегрирование.
 		
-		(Y[0])[0] = mixture->concentrations[0];
-		(Y[0])[1] = mixture->concentrations[1];
-		(Y[0])[2] = mixture->concentrations[2];
-		(Y[0])[3] = mixture->temperature;
+	(Y[0])[0] = mixture->concentrations[0];
+	(Y[0])[1] = mixture->concentrations[1];
+	(Y[0])[2] = mixture->concentrations[2];
+	(Y[0])[3] = mixture->temperature;
 
-		stifflCode = STIFFL();
+	stifflCode = STIFFL();
 
-		mixture->concentrations[0] = (Y[0])[0];
-		mixture->concentrations[1] = (Y[0])[1];
-		mixture->concentrations[2] = (Y[0])[2];
-		mixture->temperature = (Y[0])[3];
+	mixture->concentrations[0] = (Y[0])[0];
+	mixture->concentrations[1] = (Y[0])[1];
+	mixture->concentrations[2] = (Y[0])[2];
+	mixture->temperature = (Y[0])[3];
 
-		mixture->molecularWeight = mixture->calculateMolecularWeight();
-		mixture->pressure = mixture->calculatePressure();
+	mixture->molecularWeight = mixture->calculateMolecularWeight();
+	mixture->pressure = mixture->calculatePressure();
 
 }
 
@@ -74,8 +74,6 @@ RealType StifflSolver::rightSideForO(RealType concOfO,
                                          RealType concOfO3, 
                                          RealType concOfO2)
 {
-    RealType concOfM = concOfO + concOfO2 + concOfO3;
-
     RealType m1;
     RealType m2;
     RealType m3;
@@ -92,8 +90,6 @@ RealType StifflSolver::rightSideForO3(RealType concOfO,
                                           RealType concOfO3, 
                                           RealType concOfO2)
 {
-    RealType concOfM = concOfO + concOfO2 + concOfO3;
-
     RealType m1;
     RealType m2;
 
@@ -107,8 +103,6 @@ RealType StifflSolver::rightSideForO2(RealType concOfO,
                                          RealType concOfO3, 
                                          RealType concOfO2)
 {
-    RealType concOfM = concOfO + concOfO2 + concOfO3;
-
     RealType m1;
     RealType m2;
     RealType m3;
@@ -228,9 +222,9 @@ void StifflSolver::PEDERV()
 
 int StifflSolver::IFNSH()
 {
-	mixture->molecularWeight = mixture->calculateMolecularWeight();
-	mixture->pressure = mixture->calculatePressure();
-	mixture->temperature = (Y[0])[3];
+	//mixture->molecularWeight = mixture->calculateMolecularWeight();
+	//mixture->pressure = mixture->calculatePressure();
+	//mixture->temperature = (Y[0])[3];
 	//printToFile();
 
 	return 0;
@@ -238,11 +232,15 @@ int StifflSolver::IFNSH()
 
 int StifflSolver::DIFFUN(double **YY, double *F)
 {
-	mixture->concentrations[0] = (Y[0])[0];
-	mixture->concentrations[1] = (Y[0])[1];
-	mixture->concentrations[2] = (Y[0])[2];
-	mixture->temperature = (Y[0])[3];
+	mixture->concentrations[0] = Y[0][0];
+	mixture->concentrations[1] = Y[0][1];
+	mixture->concentrations[2] = Y[0][2];
+	mixture->temperature = Y[0][3];
 
+	concOfM = 0;
+	for (int i = 0; i < mixture->nSubstances; i++) {
+		concOfM += mixture->concentrations[i];
+	}
 	k1f = calculateRateForForwardReaction(0);
 	k2f = calculateRateForForwardReaction(1);
 	k3f = calculateRateForForwardReaction(2);

@@ -171,6 +171,7 @@ private:
 	RealType k1r;
 	RealType k2r;
 	RealType k3r;
+	RealType concOfM;
 	/**
 	 * Переопределяет IFNSH() из Stiffl. Служит для управления выводом 
 	 * решения в процессе интегрирования. 
