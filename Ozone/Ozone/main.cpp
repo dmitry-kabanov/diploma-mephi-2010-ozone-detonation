@@ -1,4 +1,4 @@
-**
+/**
  * @file
  * @author Кабанов Дмитрий <kabanovdmitry@gmail.com
  * @version $Id$
