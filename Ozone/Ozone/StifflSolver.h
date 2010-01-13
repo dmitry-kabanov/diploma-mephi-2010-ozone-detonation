@@ -2,14 +2,14 @@
 * @file
 *
 * @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
-* @version %I%
+* @version $Id$
 *
 * @section DESCRIPTION
 *
-* Класс интегрирования системы ОДУ химической кинетики.
+* Объявление класса StifflSolver.
 */
-#ifndef RUNGE_KUTTA_METHOD_H
-#define RUNGE_KUTTA_METHOD_H
+#ifndef STIFFL_SOLVER_H
+#define STIFFL_SOLVER_H
 
 #include <iostream>
 #include <fstream>
@@ -19,14 +19,27 @@
 #include "Substance.h"
 #include "Stiffl.h"
 
+/**
+ * Класс интегрирования системы ОДУ химической кинетики. Для интегрирования 
+ * использует метод STIFF, представляющий собой модификацию метода Гира.
+ * См. Захаров А. Ю., Турчанинов В. П. STIFF — программа для решения жестких 
+ * систем ОДУ. Препринт Института прикладной математики АН СССР. М., 1977 г.
+ */
 class StifflSolver : public Stiffl
 {
 public:
     /**
      * Конструктор класса.
      *
+	 * @param NYDIM_PAR				количество ОДУ 1-го порядка
+	 * @param values				начальные значения искомых переменных
+	 * @param t_begin				начальное значение текущего времени, с
+	 * @param t_end					конечное момент времени, до которого 
+	 * нужно интегрировать систему ОДУ, с
+	 * @param t_step_begin			начальный шаг интегрирования, с
      * @param fileOfSubstances      имя файла с веществами
      * @param fileOfReactions       имя файла с реакциями
+	 * @param fileOfMoleFractions   имя файла с мольными долями
      */
 	StifflSolver(int NYDIM_PAR, double *values, double t_begin, double t_end,
 					 double t_step_begin,
@@ -45,7 +58,8 @@ public:
     */
     void performIntegration(RealType aFullTime);
     /**
-     * Обновляет значения мольных долей компонентов смеси.
+     * Обновляет значения мольных долей компонентов смеси. Значения передаются 
+	 * в газодинамический расчет.
      *
      * @param vf указатель на массив, в который пишутся
      * новые значения мольных долей.
@@ -157,9 +171,10 @@ private:
 	RealType k1r;
 	RealType k2r;
 	RealType k3r;
+
 	virtual int IFNSH();
 	virtual int DIFFUN(double **YY, double *F);
 	virtual void PEDERV();
 };
 
-#endif
+#endif // STIFFL_SOLVER_H

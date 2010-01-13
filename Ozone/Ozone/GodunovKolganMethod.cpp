@@ -195,9 +195,13 @@ void GodunovKolganMethod::init_()
 		rho_e_delta[i] = 0;
 	}
 
-	// Пишем начальные значения в файл.
-	if (! config_->getResume()) {
+	if (! config_->getResume())	{
+		// Пишем начальные значения в файл.
 		plotter_->plotData(0, *this);
+	} 
+	else
+	{
+		update_();
 	}
 }
 
@@ -496,9 +500,10 @@ void GodunovKolganMethod::run()
 					break;
 				}
 			}
-			cout << "Max dT = " << maxdT << endl << endl;
+			cout << "Max dT = " << maxdT << endl;
 			modifyMesh();
 			plotter_->plotData(j, *this);
+			cout << endl;
 		}
 
 		// Модифицируем ячейки, связанные с фронтом ударной волны.
@@ -598,7 +603,7 @@ void GodunovKolganMethod::modifyMesh()
 		}
 	}
 
-	if (reaction_start == 0) {
+	if (reaction_start == 0 || reaction_start == 2) {
 		cout << "No modifying of the mesh." << endl;
 		return;
 	}
@@ -671,4 +676,55 @@ void GodunovKolganMethod::modifyMesh()
 		shock_wave_front[i] = shock_wave_front[i+offset];
 		gamma[i] = gamma[i+offset];
 	}
+}
+
+void GodunovKolganMethod::update_()
+{
+	int num_digits;
+	char time[32];
+	// TODO: добавить проверку на существование каталога.
+	string fullname("Output\\data_");
+
+	num_digits = sprintf_s(time, "%d", config_->getStart());
+	fullname += time;
+	fullname += ".txt";
+
+	ifstream file(fullname.c_str());
+	if (! file) {
+		cout << "Cannot read file '" << fullname << "'." << endl;
+		exit(-1);
+	}
+
+	string s;
+	getline(file, s);
+	int length = 0;
+
+	file >> x[0];
+
+	for (int i = 1; !file.eof(); i++) {
+		length++;
+	    file >> s;
+	    file >> x[i];
+	    file >> x_center[i];
+	    file >> p[i];
+	    file >> u[i];
+	    file >> rho[i];
+		rho_u[i] = rho[i] * u[i];
+		rho_e[i] = p[i] / (config_->getGammaBehindFront() - 1);
+	    file >> e[i];
+	    file >> u_energy[i];
+	    internal_energy[i] = p[i] / 
+			((config_->getGammaBehindFront() - 1) * rho[i]);
+	    file >> volumeFractions[i][0];
+	    file >> volumeFractions[i][1];
+	    file >> volumeFractions[i][2];
+	    shock_wave_front[i] = false;
+	    m[i] = (x[i] - x[i-1]) * rho[i];
+	    gamma[i] = config_->getGammaBehindFront();
+	}
+	internal_energy[length] = p[length] / 
+		((config_->getGammaAheadFront() - 1) * rho[length]);
+	gamma[length] = config_->getGammaAheadFront();
+	shock_wave_front[length-1] = true;
+	shock_wave_front[length]   = true;
 }

@@ -106,6 +106,12 @@ private:
 	 */
 	void modifyMesh();
 
+	/**
+	 * Берет данные для расчета из файла с временным шагом, записанным 
+	 * в переменной config_->start_.
+	 */
+	void update_();
+
 	const Config *config_;
 	// Массив номеров ячеек.
 	std::vector<int> cells_numbers;
