@@ -213,6 +213,10 @@
 				RelativePath=".\TestConfig.cpp"
 				>
 			</File>
+			<File
+				RelativePath=".\TestStifflSolver.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"
