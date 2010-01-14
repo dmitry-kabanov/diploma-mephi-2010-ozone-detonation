@@ -48,8 +48,8 @@ long double calc_u_contact(long double p, long double p_left, long double p_righ
     long double u;
 
     if ((EXACT_RIEMANN_SOLVER == false)
-        || (abs(p_left - p) <= 10e-10)
-        || (abs(p_right - p) <= 10e-10)) {
+        || (abs(p_left - p) <= 1e-3)
+        || (abs(p_right - p) <= 1e-3)) {
         long double c_left, c_right;
 
         c_left = calc_c(p_left, rho_left, gamma);

@@ -97,9 +97,6 @@ void Config::readFileOfConfig(const char *filename)
 		else if (parName == "timeStepForOutput") {
 			is >> timeStepForOutput_;
 		}
-		else if (parName == "resume") {
-			is >> resume_;
-		}
 		else if (parName == "start") {
 			is >> start_;
 		}

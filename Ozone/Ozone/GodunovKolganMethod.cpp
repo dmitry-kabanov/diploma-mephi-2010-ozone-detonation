@@ -11,6 +11,7 @@
 #include "GodunovKolganMethod.h"
 
 #include <cmath>
+#include <cassert>
 #include <iostream>
 #include "constants.h"
 #include "func_riemann_solver.h"
@@ -196,14 +197,13 @@ void GodunovKolganMethod::init_()
 		rho_e_delta[i] = 0;
 	}
 
-	if (! config_->getResume())	{
+	if (config_->getStart() == 0)	{
 		// Пишем начальные значения в файл.
 		plotter_->plotData(0, *this);
 	} 
 	else
 	{
 		update_();
-		cout << "Starting from time step " << config_->getStart() << endl;
 	}
 }
 
@@ -488,6 +488,8 @@ void GodunovKolganMethod::run()
 			gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
 			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
+		cout << "j = " << j << endl;
+		cout << "D = " << shock_wave_velocity << endl;
 
 		if (j % config_->getTimeStepForOutput() == 0) {
 			cout << "j = " << j << endl;
@@ -542,6 +544,7 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 	int i = frontCellNumber_;
 
 	if ((x[i+1] - x[i]) <= config_->getCellWidthCoeff() * (x[i] - x[i-1])) {
+		cout << "Modifying shock wave front." << endl;
 		RealType delta_x_right = x[i+2] - x[i+1];
 		RealType delta_x_left  = x[i+1] - x[i];
 		RealType delta_x_sum = delta_x_left + delta_x_right;
@@ -669,7 +672,7 @@ void GodunovKolganMethod::modifyMesh()
 		u_energy[i] = u_energy[i+offset];
 		p[i] = p[i+offset];
 		x[i] = x[i+offset];
-		x_center[i] = x[i + offset];
+		x_center[i] = x_center[i + offset];
 		rho_u[i] = rho_u[i+offset];
 		rho_e[i] = rho_e[i+offset];
 		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
@@ -694,7 +697,15 @@ void GodunovKolganMethod::update_()
 	ifstream file(fullname.c_str());
 	if (! file) {
 		cout << "Cannot read file '" << fullname << "'." << endl;
+		cout << "Calculations can not be done from time step" 
+			 << config_->getStart() 
+			 << endl;
 		exit(-1);
+	}
+	else {
+		cout << "Starting from time step " << config_->getStart() 
+			 << "."
+			 << endl;
 	}
 
 	string s;
@@ -703,8 +714,8 @@ void GodunovKolganMethod::update_()
 
 	file >> x[0];
 
-	for (int i = 1; !file.eof(); i++) {
-		length++;
+	for (int i = 1; !file.eof(); ++i) {
+		++length;
 	    file >> s;
 	    file >> x[i];
 	    file >> x_center[i];
@@ -729,4 +740,9 @@ void GodunovKolganMethod::update_()
 	gamma[length] = config_->getGammaAheadFront();
 	shock_wave_front[length-1] = true;
 	shock_wave_front[length]   = true;
+
+	for (int i = length + 1; i < meshSize_; ++i) {
+		x[i] = x[i-1] + config_->getDx();
+		x_center[i] = (x[i-1] + x[i]) / 2.0;
+	}
 }

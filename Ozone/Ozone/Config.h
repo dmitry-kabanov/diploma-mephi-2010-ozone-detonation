@@ -62,8 +62,6 @@ public:
 	void setTimeSteps(int val) { timeSteps_ = val; }
 	int getTimeStepForOutput() const { return timeStepForOutput_; }
 	void setTimeStepForOutput(int val) { timeStepForOutput_ = val; }
-	bool getResume() const { return resume_; }
-	void setResume(bool val) { resume_ = val; }
 	int getStart() const { return start_; }
 	void setStart(int val) { start_ = val; }
 	std::string getFileOfSubstances() const { return fileOfSubstances_; }
@@ -106,13 +104,11 @@ private:
 	int timeSteps_;
 	//  оличество временных шагов, через которые результаты записываютс€ в файл.
 	int timeStepForOutput_;
-	// ‘лаг, продолжать или начать расчет заново. —в€зан с переменной start, 
-	// котора€ задает шаг времени, на котором начинаетс€ расчет.
-	// ≈сли resume равно нулю, то start должно быть равно 1.
-	// ≈сли resume равно единице, то, например, start, равное 5000, означает, что
-	// программа загрузит данные из файла, содержащего 5000-й временной шаг,
+	// ¬ременной шаг, с которого необходимо начать интегрирование.
+	// ≈сли start_ равно 0, то расчет начинаетс€ с начала. 
+	// ≈сли start_, например, равно 5000, то программа загрузит данные 
+	// из файла с именем "data_5000.txt", содержащего 5000-й временной шаг,
 	// и начнет расчет с 5001-го шага.
-	bool resume_;
 	int start_;
 	// »м€ файла, содержащего данные о веществах.
 	std::string fileOfSubstances_;
