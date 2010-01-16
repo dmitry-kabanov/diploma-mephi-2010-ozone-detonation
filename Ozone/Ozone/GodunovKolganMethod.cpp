@@ -11,7 +11,6 @@
 #include "GodunovKolganMethod.h"
 
 #include <cmath>
-#include <cassert>
 #include <iostream>
 #include "constants.h"
 #include "func_riemann_solver.h"
@@ -359,15 +358,15 @@ void GodunovKolganMethod::run()
 			* находитс€ на правой границе i+1-й €чейки.
 			*/
 			else if (shock_wave_front[i] == false && shock_wave_front[i+1] == true) {
-				p_contact[i] = calc_p_contact(p_bound_r[i], p[i+1],
-					rho_bound_r[i], rho[i+1],
-					u_bound_r[i], u[i+1], config_->getGammaBehindFront()
-					);
+				p_contact[i] = calc_p_contact(p_bound_r[i], p_bound_l[i+1],
+					rho_bound_r[i], rho_bound_l[i+1],
+					u_bound_r[i], u_bound_l[i+1], config_->getGammaBehindFront()
+				);
 				u_contact[i] = calc_u_contact(p_contact[i],
-					p_bound_r[i], p[i+1],
-					rho_bound_r[i], rho[i+1],
-					u_bound_r[i], u[i+1], config_->getGammaBehindFront()
-					);
+					p_bound_r[i], p_bound_l[i+1],
+					rho_bound_r[i], rho_bound_l[i+1],
+					u_bound_r[i], u_bound_l[i+1], config_->getGammaBehindFront()
+				);
 			}
 			/*
 			* –ешение задачи –имана дл€ соседних €чеек, ни одна из которых
@@ -480,16 +479,16 @@ void GodunovKolganMethod::run()
 			u_energy[i] = e[i] - u[i] * u[i] / 2.0;
 			kinetics->getMixture()->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
 			kinetics->performIntegration(dt);
-			deltaTemperature[i] = kinetics->getMixture()->getOldTemperature() -
-				kinetics->getMixture()->getTemperature();
+			deltaTemperature[i] = kinetics->getMixture()->getTemperature() -
+				kinetics->getMixture()->getOldTemperature();
 			kinetics->updateMoleFractions(volumeFractions[i]);
 			p[i] = kinetics->getPressure();
 			rho_u[i] = rho[i] * u[i];
-			gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
+			//gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
 			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
-		cout << "j = " << j << endl;
-		cout << "D = " << shock_wave_velocity << endl;
+		//cout << "j = " << j << endl;
+		//cout << "D = " << shock_wave_velocity << endl;
 
 		if (j % config_->getTimeStepForOutput() == 0) {
 			cout << "j = " << j << endl;
@@ -497,7 +496,7 @@ void GodunovKolganMethod::run()
 
 			RealType maxdT = deltaTemperature[1];
 			for (i = 2; i < meshSize_; i++) {
-				if (maxdT < deltaTemperature[i]) {
+				if (abs(maxdT) < abs(deltaTemperature[i])) {
 					maxdT = deltaTemperature[i];
 				}
 				if (shock_wave_front[i] == true) {
@@ -505,8 +504,9 @@ void GodunovKolganMethod::run()
 				}
 			}
 			cout << "Max dT = " << maxdT << endl;
-			modifyMesh();
 			plotter_->plotData(j, *this);
+			//modifyMesh();
+			//plotter_->plotData(j+1, *this);
 			cout << endl;
 		}
 
@@ -544,34 +544,39 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 	int i = frontCellNumber_;
 
 	if ((x[i+1] - x[i]) <= config_->getCellWidthCoeff() * (x[i] - x[i-1])) {
-		cout << "Modifying shock wave front." << endl;
+		//cout << "Modifying shock wave front." << endl;
 		RealType delta_x_right = x[i+2] - x[i+1];
 		RealType delta_x_left  = x[i+1] - x[i];
 		RealType delta_x_sum = delta_x_left + delta_x_right;
-		RealType temp_rho = rho[i+2];
+		RealType m_left = rho[i+1] * delta_x_left;
+		RealType m_right = rho[i+2] * delta_x_right;
+		RealType new_rho;
 		RealType temp_x   = x[i];
 
-		rho[i+2] = 1 / delta_x_sum * 
-			(rho[i+2] * delta_x_right + 
-			rho[i+1] * delta_x_left);
+		new_rho = (m_left + m_right) / delta_x_sum;
 
-		m[i+2] = rho[i+2] * delta_x_sum;
+		m[i+2] = new_rho * delta_x_sum;
+		u[i+2] = (m_left * u[i+1] + m_right * u[i+2]) / m[i+2];
+		e[i+2] = (m_left * e[i+1] + m_right * e[i+2]) / m[i+2];
+		u_energy[i+2] = e[i+2] - u[i+2] * u[i+2] / 2.0;
+		rho[i+2] = new_rho;
 
-		u[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
-			(temp_rho * delta_x_right * u[i+2] + 
-			rho[i+1] * delta_x_left * u[i+1]);
-
-		e[i+2] = 1 / (rho[i+2] * delta_x_sum) * 
-			(temp_rho * delta_x_right * e[i+2] + 
-			rho[i+1] * delta_x_left * e[i+1]);
+		kinetics->getMixture()->setStateWithURhoX(u_energy[i+2], 
+			rho[i+2], 
+			volumeFractions[i+2]);
+		p[i+2] = kinetics->getPressure();
 
 		// ƒелим €чейку слева от фронта ударной волны пополам.
 		p[i+1]   = p[i];
 		rho[i+1] = rho[i];
 		u[i+1]   = u[i];
 		e[i+1]   = e[i];
-		m[i+1]   = m[i] / 2.0;
-		m[i]     = m[i] / 2.0;
+		rho_u[i+1] = rho_u[i];
+		rho_e[i+1] = rho_e[i];
+
+		//for (int k = 0; k < kinetics->getMixture()->nSubstances; ++k) {
+		//	volumeFractions[i+1][k] = volumeFractions[i][k];
+		//}
 
 		// ћодифицируем координаты границ и центров €чеек.
 		x[i]   = (x[i] + x[i-1]) / 2.0;
@@ -580,6 +585,9 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 		x_center[i]   = (x[i-1] + x[i])   / 2.0;
 		x_center[i+1] = (x[i]   + x[i+1]) / 2.0;
 		x_center[i+2] = (x[i+1] + x[i+2]) / 2.0;
+
+		m[i]   = rho[i] * (x[i] - x[i-1]);
+		m[i+1] = rho[i+1] * (x[i+1] - x[i]);
 
 		gamma[i+1] = gamma[i];
 
@@ -655,8 +663,8 @@ void GodunovKolganMethod::modifyMesh()
 		p[i] = p[offset];
 		x[i] = x[offset];
 		x_center[i] = x_center[offset];
-		rho_u[i] = rho_u[i+offset];
-		rho_e[i] = rho_e[i+offset];
+		rho_u[i] = rho_u[offset];
+		rho_e[i] = rho_e[offset];
 		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
 			volumeFractions[i][j] = volumeFractions[offset][j];
 		}
@@ -664,7 +672,8 @@ void GodunovKolganMethod::modifyMesh()
 
 	offset = reaction_start / 2;
 	meshSize_ -= offset;
-	for (i = reaction_start / 2 + 1; i < meshSize_; i++) {
+	frontCellNumber_ -= offset;
+	for (i = reaction_start / 2 + 1; i <= meshSize_; i++) {
 		m[i] = m[i+offset];
 		u[i] = u[i+offset];
 		e[i] = e[i+offset];
