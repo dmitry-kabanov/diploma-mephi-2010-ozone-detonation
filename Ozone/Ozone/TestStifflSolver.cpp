@@ -1,5 +1,6 @@
 //#include <ctime>
 //#include <iostream>
+//#include "constants.h"
 //#include "StifflSolver.h"
 //using namespace std;
 //
@@ -31,10 +32,10 @@
 //	double workingTime;
 //
 //	start = clock();
-//	kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
+//	kinetics.getMixture()->setStateWithTPX(NORMAL_TEMPERATURE, ONE_ATM, vf);
 //	cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
 //	cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
-//	kinetics.performIntegration(1.0);
+//	kinetics.performIntegration(950.0);
 //	kinetics.updateMoleFractions(vf);
 //
 //	cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
@@ -48,27 +49,5 @@
 //
 //	cout << "Calculations done in " << workingTime << " s." << endl << endl;
 //
-//	vf[2] = 100.0;
-//	vf[1] = 0.0;
-//	vf[0] = 0.0;
-//
-//	kinetics.getMixture()->setStateWithURhoX(3297630, 3.58197, vf);
-//	start = clock();
-//	kinetics.getMixture()->setStateWithTPX(1914.18, 6543160, vf);
-//	cout << "oldT = " << kinetics.getMixture()->getOldTemperature() << endl;
-//	cout << "oldP = " << kinetics.getMixture()->calculateOldPressure() << endl;
-//	kinetics.performIntegration(1.0);
-//	kinetics.updateMoleFractions(vf);
-//
-//	cout << "T = " << kinetics.getMixture()->getTemperature() << endl;
-//	cout << "P = " << kinetics.getMixture()->calculatePressure() << endl;
-//	cout << "X(O)  = " << vf[0]  << endl;
-//	cout << "X(O2) = " << vf[1] << endl;
-//	cout << "X(O3) = " << vf[2] << endl;
-//	finish = clock();
-//
-//	workingTime = (double) (finish - start) / CLOCKS_PER_SEC;
-//
-//	cout << "Calculations done in " << workingTime << " s." << endl;
 //	exit(0);
 //}

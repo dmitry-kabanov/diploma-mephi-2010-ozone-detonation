@@ -8,6 +8,9 @@ const RealType
     ONE_ATM = 101325.0,
 
     // 1 бар, выраженный в паскалях.
-    ONE_BAR = 100000.0;
+    ONE_BAR = 100000.0,
+	
+	// Комнатная температура, К
+	NORMAL_TEMPERATURE = 298.15;
 
 #endif

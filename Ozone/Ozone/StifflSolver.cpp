@@ -280,3 +280,10 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 
 	return 0;
 }
+
+void StifflSolver::updateMassFractions(RealType *mf)
+{
+	for (int i = 0; i < mixture->nSubstances; ++i) {
+		mf[i] = mixture->y_[i] * 100.0;
+	}
+}
