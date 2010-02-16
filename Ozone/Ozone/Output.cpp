@@ -20,7 +20,8 @@ using namespace std;
 Output::Output(const Mixture &mix, const std::string &format, std::string path)
 :	names_(8 + mix.nSubstances),
 	format_(format),
-	path_(path)
+	path_(path),
+	nColumnsOfSpecies_(mix.getNSpecies())
 {
 	names_[0] = "Cell No";
 	names_[1] = "Right Bound (m)";
@@ -74,18 +75,19 @@ void Output::plotData(int timeStep, GodunovKolganMethod &gkm)
 
 	outFile << delimiter_ << gkm.getX()[0] << endl;
 	for (int i = 1; i < gkm.getMeshSize(); i++) {
-		outFile << gkm.getCellNumbers()[i] << ";" <<
-			gkm.getX()[i]                  << ";" <<
-			gkm.getXCenter()[i]            << ";" << 
-			gkm.getP()[i]                  << ";" << 
-			gkm.getU()[i]                  << ";" << 
-			gkm.getRho()[i]                << ";" <<
-			gkm.getFullEnergy()[i]         << ";" << 
-			gkm.getIntEnergy()[i]          << ";" <<
-			gkm.getMoleFractions()[i][0] << ";" <<
-			gkm.getMoleFractions()[i][1] << ";" <<
-			gkm.getMoleFractions()[i][2] << 
-			endl;
+		outFile << gkm.getCellNumbers()[i] << delimiter_ <<
+			gkm.getX()[i]                  << delimiter_ <<
+			gkm.getXCenter()[i]            << delimiter_ << 
+			gkm.getP()[i]                  << delimiter_ << 
+			gkm.getU()[i]                  << delimiter_ << 
+			gkm.getRho()[i]                << delimiter_ <<
+			gkm.getFullEnergy()[i]         << delimiter_ << 
+			gkm.getIntEnergy()[i]          << delimiter_;
+			for (int j = 0; j < nColumnsOfSpecies_; ++j) {
+				outFile << gkm.getMoleFractions()[i][j];
+				outFile << (j < (nColumnsOfSpecies_ - 1) ? delimiter_ : "");
+			}
+			outFile << endl;
 		if (gkm.getShockWaveFront()[i] == true && 
 			gkm.getShockWaveFront()[i+1] == false) {
 			break;

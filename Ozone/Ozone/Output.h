@@ -15,7 +15,9 @@
 #include <vector>
 #include <string>
 #include "GodunovKolganMethod.h"
-#include "Mixture.h"
+//#include "Mixture.h"
+
+class Mixture;
 
 /**
  * Вывод данных в файл.
@@ -54,6 +56,7 @@ private:
 	std::string format_;
 	std::string delimiter_;
 	std::string path_;
+	int nColumnsOfSpecies_;
 };
 
 #endif // OUTPUT_H

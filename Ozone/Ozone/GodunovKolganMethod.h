@@ -16,8 +16,9 @@
 #include "Piston.h"
 #include "RealType.h"
 
-class StifflSolver;
+class Mixture;
 class Output;
+class StifflSolver;
 
 /**
  * Представляет собой решатель системы уравнений газовой динамики
@@ -174,6 +175,10 @@ private:
 	 * Размер разностной сетки.
 	 */
 	int meshSize_;
+	/**
+	 * Смесь газов.
+	 */
+	Mixture *mixture;
 
 };
 

@@ -11,6 +11,7 @@
 #include "GodunovKolganMethod.h"
 
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include "constants.h"
 #include "func_riemann_solver.h"
@@ -22,31 +23,29 @@ GodunovKolganMethod::GodunovKolganMethod(const Config &config)
 {
 	config_ = &config;
 
-	int nSpecies = 3;
-	double vf1[4];
-	vf1[0] = 0.0;
-	vf1[1] = 0.0;
-	vf1[2] = 0.0;
-	vf1[3] = 0.0;
-	kinetics = new StifflSolver(
-		nSpecies + 1,
+	mixture = new Mixture(config_->getFileOfSubstances().c_str(),
+		config_->getFileOfReactions().c_str(),
+		config_->getFileOfFractions().c_str());
+
+	double *vf1 = new double [mixture->getNSpecies()];
+	for (int i = 0; i < mixture->getNSpecies(); ++i) {
+		vf1[i] = 0.0;
+	}
+	kinetics = new StifflSolver(mixture->getNSpecies() + 1,
 		vf1,
 		0.0,
 		0.0,
-		1.0e-13,
-		"Substances.txt",
-		"Reactions.txt",
-		"MoleFractions.txt");
+		1.0e-13);
 	kinetics->Seteps(1e-2);
 
 	piston = new Piston(config_->getPInitial(),
 		config_->getRhoInitial(),
-		"Piston.txt");
-	plotter_ = new Output(*kinetics->getMixture(), "csv", "Output");
+		config_->getFileOfPiston().c_str());
+	plotter_ = new Output(*mixture, "csv", "Output");
 
 	volumeFractions  = new RealType*[config_->getMeshSize()+1];
 	for (int i = 0; i <= config_->getMeshSize(); i++) {
-		volumeFractions[i] = new RealType[kinetics->getMixture()->nSubstances];
+		volumeFractions[i] = new RealType[mixture->nSubstances];
 	}
 
 	shock_wave_front = new bool[config_->getMeshSize()+1];
@@ -123,15 +122,8 @@ void GodunovKolganMethod::init_()
 		}
 	}
 
-	for (int i = 0; i <= config_->getInitialShockWaveSize(); i++) {
-		volumeFractions[i][0] = 0.0;
-		volumeFractions[i][1] = 0.0;
-		volumeFractions[i][2] = 100.0;
-	}
-	for (int i = config_->getInitialShockWaveSize()+1; i <= meshSize_; i++) {
-		volumeFractions[i][0] = 0.0;
-		volumeFractions[i][1] = 0.0;
-		volumeFractions[i][2] = 100.0;
+	for (int i = 0; i <= meshSize_; i++) {
+		mixture->returnMoleFractions(volumeFractions[i]);
 	}
 
 	internal_energy[0] = 0.0;
@@ -151,12 +143,12 @@ void GodunovKolganMethod::init_()
 			internal_energy[i] = p[i] / ((config_->getGammaAheadFront() - 1) * rho[i]);
 		}
 
-		kinetics->getMixture()->setVolumeFractions(volumeFractions[i]);
-		kinetics->getMixture()->calculateInitialMolecularWeight();
-		mw = kinetics->getMixture()->getMolecularWeight();
+		mixture->setVolumeFractions(volumeFractions[i]);
+		mixture->calculateInitialMolecularWeight();
+		mw = mixture->getMolecularWeight();
 		t = p[i] * mw / (Mixture::R_J_OVER_KMOL_K * rho[i]);
-		kinetics->getMixture()->setConcentrations(t, rho[i]);
-		u_energy[i] = kinetics->getMixture()->calculateMixtureEnthalpy(t) -
+		mixture->setConcentrations(t, rho[i]);
+		u_energy[i] = mixture->calculateMixtureEnthalpy(t) -
 			p[i] / rho[i];
 
 		e[i] = u_energy[i] + u[i] * u[i] / 2.0;
@@ -252,6 +244,11 @@ void GodunovKolganMethod::resizeAllVectors()
 void GodunovKolganMethod::run()
 {
 	int i;
+
+	ofstream outD("velocity.txt");
+	if (!outD) {
+		cout << "Can't create file for shock wave velocity" << endl;
+	}
 
 	for (int j = config_->getStart() + 1; j <= config_->getTimeSteps(); j++) {
 		for (i = 2; i < meshSize_; i++) {
@@ -388,7 +385,7 @@ void GodunovKolganMethod::run()
 		*/
 		// Ћева€ граница области расчета движетс€ со скоростью поршн€.
 		p_contact[0] = p[1];
-		u_contact[0] = piston->calculateVelocity(volumeFractions[1][2]);
+		u_contact[0] = piston->calculateVelocity(volumeFractions[1]);
 
 		/**
 		* —читаем импульс и энергию в €чейке.
@@ -476,12 +473,12 @@ void GodunovKolganMethod::run()
 			x_center[i] = (x[i-1] + x[i]) / 2.0;
 			rho[i] = m[i] / (x[i] - x[i-1]);
 			u_energy[i] = e[i] - u[i] * u[i] / 2.0;
-			kinetics->getMixture()->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
-			kinetics->performIntegration(dt);
-			deltaTemperature[i] = kinetics->getMixture()->getTemperature() -
-				kinetics->getMixture()->getOldTemperature();
-			kinetics->updateMoleFractions(volumeFractions[i]);
-			p[i] = kinetics->getPressure();
+			mixture->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
+			kinetics->performIntegration(*mixture, dt);
+			deltaTemperature[i] = mixture->getTemperature() -
+				mixture->getOldTemperature();
+			mixture->updateMoleFractions(volumeFractions[i]);
+			p[i] = mixture->calculatePressure();
 			rho_u[i] = rho[i] * u[i];
 			//gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
 			rho_e[i] = p[i] / (gamma[i] - 1);
@@ -492,9 +489,13 @@ void GodunovKolganMethod::run()
 		// ћодифицируем €чейки, св€занные с фронтом ударной волны.
 		modifyShockWaveFront_();
 
+		if (j % 10 == 0) {
+			outD << j << " " << shock_wave_velocity << endl;
+		}
 		if (j % config_->getTimeStepForOutput() == 0) {
-			cout << "j = " << j << endl;
-			cout << "D = " << shock_wave_velocity << endl;
+			cout << setw(6) << "j" << " = " << j << endl;
+			cout << setw(6) << "D" << " = " << shock_wave_velocity << endl;
+			cout << setw(6) << "xFront" << " = " << x[frontCellNumber_] << endl;
 
 			RealType maxdT = deltaTemperature[1];
 			for (i = 2; i < meshSize_; i++) {
@@ -505,7 +506,7 @@ void GodunovKolganMethod::run()
 					break;
 				}
 			}
-			cout << "Max dT = " << maxdT << endl;
+			cout << setw(6) << "Max dT" << " = " << maxdT << endl;
 			cout << endl;
 
 			modifyMesh();
@@ -560,7 +561,7 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 		u_energy[i+2] = e[i+2] - u[i+2] * u[i+2] / 2.0;
 		rho[i+2] = new_rho;
 
-		kinetics->getMixture()->setStateWithURhoX(u_energy[i+2], 
+		mixture->setStateWithURhoX(u_energy[i+2], 
 			rho[i+2], 
 			volumeFractions[i+2]);
 		p[i+2] = kinetics->getPressure();
@@ -600,10 +601,11 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 void GodunovKolganMethod::modifyMesh()
 {
 	int nMinConcOfO3 = 1;
-	int nNoUnion = 5000;
+	int nNoUnion	 = 10000;
 	int nUnitedCells = 1000;
+	int i;
 
-	for (int i = 1; i < frontCellNumber_; ++i) {
+	for (i = 1; i < frontCellNumber_; ++i) {
 		if (volumeFractions[i][2] >= 0.01) {
 			break;
 		}
@@ -628,11 +630,10 @@ void GodunovKolganMethod::modifyMesh()
 	RealType m_right;
 	RealType m_new;
 	RealType rho_new;
-	RealType *mf_left  = new RealType[kinetics->getMixture()->nSubstances];
-	RealType *mf_right = new RealType[kinetics->getMixture()->nSubstances];
-	RealType *mf_new   = new RealType[kinetics->getMixture()->nSubstances];
+	RealType *mf_left  = new RealType[mixture->getNSpecies()];
+	RealType *mf_right = new RealType[mixture->getNSpecies()];
+	RealType *mf_new   = new RealType[mixture->getNSpecies()];
 	int offset;
-	int i;
 
 	for (i = 1; i < reaction_start; i += 2) {
 		dx_left  = x[i] - x[i-1];
@@ -644,27 +645,27 @@ void GodunovKolganMethod::modifyMesh()
 		rho_new = (m_left + m_right) / dx_new;
 		m_new = rho_new * dx_new;
 		
-		kinetics->getMixture()->setStateWithURhoX(u_energy[i], 
+		mixture->setStateWithURhoX(u_energy[i], 
 			rho[i], 
 			volumeFractions[i]);
-		kinetics->updateMassFractions(mf_left);
-		kinetics->getMixture()->setStateWithURhoX(u_energy[i+1], 
+		mixture->updateMassFractions(mf_left);
+		mixture->setStateWithURhoX(u_energy[i+1], 
 			rho[i+1], 
 			volumeFractions[i+1]);
-		kinetics->updateMassFractions(mf_right);
+		mixture->updateMassFractions(mf_right);
 
 		// ¬еличина, обратна€ молекул€рному весу объединенной €чейки.
 		RealType invMWeightNew = 0;
 
-		for (int j = 0; j < kinetics->getMixture()->nSubstances; ++j) {
+		for (int j = 0; j < mixture->getNSpecies(); ++j) {
 			mf_new[j] = (m_left * mf_left[j] + m_right * mf_right[j]) / m_new;
 			invMWeightNew += mf_new[j] / 
-				kinetics->getMixture()->substances[j]->molecularWeight;
+				mixture->substances[j]->molecularWeight;
 		}
 		invMWeightNew /= 100.0;
-		for (int j = 0; j < kinetics->getMixture()->nSubstances; ++j) {
+		for (int j = 0; j < mixture->getNSpecies(); ++j) {
 			volumeFractions[i][j] = mf_new[j] / invMWeightNew /
-				kinetics->getMixture()->substances[j]->molecularWeight;
+				mixture->substances[j]->molecularWeight;
 		}
 
 		u[i]		= (m_left * u[i] + m_right * u[i+1]) / m_new;
@@ -673,7 +674,7 @@ void GodunovKolganMethod::modifyMesh()
 		rho[i]		= rho_new;
 		m[i]		= m_new;
 
-		kinetics->getMixture()->setStateWithURhoX(u_energy[i], 
+		mixture->setStateWithURhoX(u_energy[i], 
 			rho[i], 
 			volumeFractions[i]);
 		p[i] = kinetics->getPressure();
@@ -696,7 +697,7 @@ void GodunovKolganMethod::modifyMesh()
 		x_center[i] = x_center[offset];
 		rho_u[i] = rho_u[offset];
 		rho_e[i] = rho_e[offset];
-		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
+		for (int j = 0; j < mixture->getNSpecies(); j++) {
 			volumeFractions[i][j] = volumeFractions[offset][j];
 		}
 	}
@@ -715,7 +716,7 @@ void GodunovKolganMethod::modifyMesh()
 		x_center[i] = x_center[i + offset];
 		rho_u[i] = rho_u[i+offset];
 		rho_e[i] = rho_e[i+offset];
-		for (int j = 0; j < kinetics->getMixture()->nSubstances; j++) {
+		for (int j = 0; j < mixture->getNSpecies(); j++) {
 			volumeFractions[i][j] = volumeFractions[i+offset][j];
 		}
 		shock_wave_front[i] = shock_wave_front[i+offset];
@@ -777,9 +778,9 @@ void GodunovKolganMethod::update_()
 	    file >> u_energy[i];
 	    internal_energy[i] = p[i] / 
 			((config_->getGammaBehindFront() - 1) * rho[i]);
-	    file >> volumeFractions[i][0];
-	    file >> volumeFractions[i][1];
-	    file >> volumeFractions[i][2];
+		for (int j = 0; j < mixture->getNSpecies(); ++j) {
+			file >> volumeFractions[i][j];
+		}
 	    shock_wave_front[i] = false;
 	    m[i] = (x[i] - x[i-1]) * rho[i];
 	    gamma[i] = config_->getGammaBehindFront();

@@ -70,6 +70,8 @@ public:
 	void setFileOfReactions(std::string val) { fileOfReactions_ = val; }
 	std::string getFileOfFractions() const { return fileOfFractions_; }
 	void setFileOfFractions(std::string val) { fileOfFractions_ = val; }
+	std::string getFileOfPiston() const { return fileOfPiston_; }
+	void setFileOfPiston(std::string val) { fileOfPiston_ = val; }
 
 private:
 	/**
@@ -116,6 +118,8 @@ private:
 	std::string fileOfReactions_;
 	// Имя файла, содержащего мольные доли компонентов начальной смеси.
 	std::string fileOfFractions_;
+	// Имя файла, содержащего данные о поршне.
+	std::string fileOfPiston_;
 };
 
 #endif // CONFIG_H

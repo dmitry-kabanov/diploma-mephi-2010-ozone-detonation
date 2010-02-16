@@ -10,6 +10,7 @@
 */
 #include "Mixture.h"
 #include <cmath>
+#include <iomanip>
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -92,6 +93,8 @@ void Mixture::readFileOfSubstances(const char *filename)
 void Mixture::readFileOfReactions(const char *filename)
 {
     char ch;
+	string speciesName;
+	RealType effValue;
     ifstream iFile(filename);
     
     iFile >> nReactions >> ch;
@@ -101,15 +104,39 @@ void Mixture::readFileOfReactions(const char *filename)
     for (int i = 0; i < nReactions; i++) {
         iFile >> reactions[i].typeOfReaction;
         iFile >> ch; // Ноль
-        iFile >> ch; // Количество температурных интервалов
+        iFile >> reactions[i].nTemperatureRanges; // Количество температурных интервалов
         iFile >> ch; // Единица
 
-        iFile >> reactions[i].temperatureLow;
-        iFile >> reactions[i].temperatureHigh;
-        iFile >> reactions[i].log10A;
-        iFile >> reactions[i].n;
-        iFile >> reactions[i].activationEnergy;
-        iFile >> reactions[i].nameOfReaction;
+		reactions[i].allocateMemoryForParameters();
+
+		for (int j = 0; j < reactions[i].nTemperatureRanges; ++j) {
+			iFile >> reactions[i].temperatureLow[j];
+			iFile >> reactions[i].temperatureHigh[j];
+			iFile >> reactions[i].log10A[j];
+			iFile >> reactions[i].n[j];
+			iFile >> reactions[i].activationEnergy[j];
+		}
+		
+		iFile >> reactions[i].nameOfReaction;
+
+		iFile.get(ch);
+		if (ch == 10 || ch == 13) {
+			continue;
+		}
+		reactions[i].allocateMemoryForCollisionEfficiency(nSubstances);
+		iFile >> ch; // %
+		while (ch != 10 && ch != 13) {
+			iFile >> speciesName;
+			iFile >> effValue;
+			for (int j = 0; j < nSubstances; ++j) {
+				if (speciesName == substances[j]->nameOfSubstance) {
+					reactions[i].nEff = true;
+					reactions[i].pEff[j] = effValue;
+					break;
+				}
+			}
+			iFile.get(ch);
+		}
     }
     fillReagents();
     fillProducts();
@@ -181,17 +208,8 @@ void Mixture::allocateMemoryForReactions()
 
 RealType Mixture::calculateSubstanceEnthalpy(int i, RealType t)
 {
-    int numberOfTemperatureRange = 0;
+    int numberOfTemperatureRange = getTemperatureRangeNumber(i, t);
     int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (t <= substances[i]->temperatureHigh[j]) {
-            numberOfTemperatureRange = j;
-            break;
-        }
-        numberOfTemperatureRange = j;
-    }
-    
 
     RealType res = 0;
     RealType *a = substances[i]->a[numberOfTemperatureRange];
@@ -206,17 +224,8 @@ RealType Mixture::calculateSubstanceEnthalpy(int i, RealType t)
 
 RealType Mixture::calculateSubstanceEntropy(int i, RealType t)
 {
-    int numberOfTemperatureRange;
+    int numberOfTemperatureRange = getTemperatureRangeNumber(i, t);
     int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (t <= substances[i]->temperatureHigh[j]) {
-            numberOfTemperatureRange = j;
-            break;
-        }
-        numberOfTemperatureRange = j;
-    }
-
 
     RealType res = 0;
     RealType *a = substances[i]->a[numberOfTemperatureRange];
@@ -239,6 +248,15 @@ void Mixture::fillReagents()
     for (int i = 0; i < nReactions; i++) {
         s = reactions[i].nameOfReaction;
         int lside = s.find("<");
+		if (lside == string::npos) {
+			cout << "Reaction '" << reactions[i].nameOfReaction 
+				 << "' is irreversible." << endl;
+			reactions[i].direction = 1;
+			lside = s.find("=");
+		}
+		else {
+			reactions[i].direction = 0;
+		}
         int k = 0;
         string subs[5];
         for (int j = 0; j < lside; j++) {
@@ -316,16 +334,8 @@ RealType Mixture::calculateCp(RealType t)
 
 RealType Mixture::calculateSubstanceCp(int i, RealType t)
 {
-    int nInt = 0;
+    int nInt = getTemperatureRangeNumber(i, t);
     int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (t <= substances[i]->temperatureHigh[j]) {
-            nInt = j;
-            break;
-        }
-        nInt = j;
-    }
 
     RealType* a = substances[i]->a[nInt];
  
@@ -364,17 +374,7 @@ void Mixture::sumPolynomialCoeffs(RealType t)
 
 RealType Mixture::calculateSubstanceGibbsEnergy(int i, RealType t)
 {
-    int numberOfTemperatureRange = 0;
-    int j;
-
-    for (j = 0; j < substances[i]->nTemperatureRanges; j++) {
-        if (t <= substances[i]->temperatureHigh[j]) {
-            numberOfTemperatureRange = j;
-            break;
-        }
-        numberOfTemperatureRange = j;
-    }
-
+    int numberOfTemperatureRange = getTemperatureRangeNumber(i, t);
 
     RealType res = 0;
     RealType *a = substances[i]->a[numberOfTemperatureRange];
@@ -491,7 +491,7 @@ RealType Mixture::calculateInitialTemperature()
     // Максимальное количество итераций.
     const int maxIterations = 20;
     // Точность нахождения температуры.
-    RealType precision = 1e-3;
+    RealType precision = 1e-4;
     // Задаем начальное приближение.
     RealType t = 2000;
     // Уравнение, связывающее удельную внутреннюю энергию
@@ -512,10 +512,12 @@ RealType Mixture::calculateInitialTemperature()
                 ") was reached." << endl;
             cout << "Internal energy = " << fullEnergy << " J/kg" << endl;
             cout << "Density         = " << 1.0 / volume << endl;
-            cout << "X(O)            = "  << volumeFractions[0] << endl;
-            cout << "X(O2)           = "  << volumeFractions[1] << endl;
-            cout << "X(O3)           = "  << volumeFractions[2] << endl;
+			for (int i = 0; i < nSubstances; ++i) {
+				cout << setw(12) << "X(" << substances[i]->nameOfSubstance << ") = "
+					<< volumeFractions[i] << endl;
+			}
             cout << "T = " << t << endl;
+			cout << endl;
             //exit(-1);
             return t;
         }
@@ -569,35 +571,35 @@ RealType Mixture::calculatePressure()
 RealType Mixture::calculateMixtureCp(RealType t)
 {
     RealType mixtureHeatCapacity = 0.0;
-    RealType mixtureHeatCapacityJOverKgK;
+    //RealType mixtureHeatCapacityJOverKgK;
 
-    // Теплоёмкость в Дж / (кмоль * К)
+    // Теплоёмкость в Дж / (кг * К)
     for (int i = 0; i < nSubstances; i++) {
         mixtureHeatCapacity += y_[i] * calculateSubstanceCp(i, t);
     }
     
     // Теплоёмкость в Дж / (кг * К)
     //mixtureHeatCapacityJOverKgK = mixtureHeatCapacity / molecularWeight;
-    mixtureHeatCapacityJOverKgK = mixtureHeatCapacity;
+    //mixtureHeatCapacityJOverKgK = mixtureHeatCapacity;
     
     // Теплоёмкость в Дж / (кмоль * К)
     // mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
     //    molecularWeight;
 
-    return mixtureHeatCapacityJOverKgK;
+    return mixtureHeatCapacity;
 }
 
 RealType Mixture::calculateMixtureEnthalpy(RealType t)
 {
-    RealType mixEnthalpyOfFormation = 0.0;
+    //RealType mixEnthalpyOfFormation = 0.0;
     RealType mixEnthalpy = 0.0;
 
-    for (int i = 0; i < nSubstances; i++) {
-        // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
-        mixEnthalpyOfFormation += y_[i] * 
-            substances[i]->enthalpyOfFormation * 1.0e6 /
-            substances[i]->molecularWeight;
-    }
+    //for (int i = 0; i < nSubstances; i++) {
+    //    // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
+    //    mixEnthalpyOfFormation += y_[i] * 
+    //        substances[i]->enthalpyOfFormation * 1.0e6 /
+    //        substances[i]->molecularWeight;
+    //}
 
     for (int i = 0; i < nSubstances; i++) {
         mixEnthalpy += y_[i] * calculateSubstanceEnthalpy(i, t);
@@ -697,4 +699,54 @@ void Mixture::setStateWithTPX(RealType t, RealType p, RealType *x)
     }
 
     fullEnergy = calculateMixtureEnthalpy(temperature) - pressure * volume;
+}
+
+void Mixture::returnMoleFractions(RealType *mf)
+{
+	for (int i = 0; i < nSubstances; ++i) {
+		mf[i] = volumeFractions[i] * 100;
+	}
+
+	return;
+}
+
+void Mixture::updateMoleFractions(RealType *vf)
+{
+	RealType sumConc = 0.0;
+
+	for (int i = 0; i < nSubstances; i++) {
+		sumConc += concentrations[i];
+	}
+
+	for (int i = 0; i < nSubstances; i++) {
+		vf[i] = concentrations[i] / sumConc * 100;
+	}
+}
+
+void Mixture::updateMassFractions(RealType *mf)
+{
+	for (int i = 0; i < nSubstances; ++i) {
+		mf[i] = y_[i] * 100.0;
+	}
+}
+
+int Mixture::getTemperatureRangeNumber(int i, RealType t)
+{
+	int numberOfTemperatureRange = -1;
+
+	for (int j = 0; j < substances[i]->nTemperatureRanges; j++) {
+		if (t <= substances[i]->temperatureHigh[j]) {
+			numberOfTemperatureRange = j;
+			break;
+		}
+		//numberOfTemperatureRange = j;
+	}
+	if (numberOfTemperatureRange == -1) {
+		cout << "Temperature " << t << " K is out of range " 
+			 << "provided for species '" << substances[i]->nameOfSubstance 
+			 << "'." << endl;
+		exit(-1);
+	}
+
+	return numberOfTemperatureRange;
 }

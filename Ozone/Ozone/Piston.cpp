@@ -20,10 +20,11 @@ Piston::~Piston()
     delete [] fractions_;
 }
 
-RealType Piston::calculateVelocity(RealType f)
+RealType Piston::calculateVelocity(RealType *volumeFractions)
 {
     RealType p = pInitial_;
     RealType rho = rhoInitial_;
+	RealType f = volumeFractions[numberOfSpecies_];
 
     for (int i = 0; i < nRows_; ++i) {
         if (f <= fractions_[i]) {
@@ -41,6 +42,7 @@ void Piston::readFileOfPiston(const char* fileOfPistonData)
     ifstream iFile(fileOfPistonData);
     
     iFile >> nRows_;
+	iFile >> numberOfSpecies_;
 
     pressures_ = new RealType[nRows_];
     densities_ = new RealType[nRows_];
@@ -49,6 +51,4 @@ void Piston::readFileOfPiston(const char* fileOfPistonData)
     for (int i = 0; i < nRows_; ++i) {
         iFile >> pressures_[i] >> densities_[i] >> fractions_[i];
     }
-
-    iFile.close();
 }

@@ -214,11 +214,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\TestHeatCapacity.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\TestOzoneDecomposition.cpp"
 				>
 			</File>
 			<File
-				RelativePath=".\TestStifflSolver.cpp"
+				RelativePath=".\TestStifflSolver_H2_O2_O3.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\TestStifflSolver_O3.cpp"
 				>
 			</File>
 		</Filter>

@@ -9,23 +9,22 @@
 * Реализация класса RungeKuttaMethod.
 */
 #include "StifflSolver.h"
+#include <iomanip>
 #include <iostream>
 #include <cmath>
 #include "constants.h"
 using namespace std;
 
-StifflSolver::StifflSolver(int NYDIM_PAR, double *values, double t_begin, double t_end,
-					 double t_step_begin,
-					 const char *fileOfSubstances,
-                     const char *fileOfReactions,
-                     const char *fileOfMoleFractions)
+StifflSolver::StifflSolver(int NYDIM_PAR,
+						   double *values,
+						   double t_begin,
+						   double t_end,
+						   double t_step_begin)
 	: Stiffl(NYDIM_PAR, values, t_begin, t_end, t_step_begin)
 {
     h = t_step_begin;
     timeStepForOutput = 100;
-    mixture = new Mixture(fileOfSubstances,
-                          fileOfReactions,
-                          fileOfMoleFractions);
+    mixture = 0;
     //outputFile.open("output.txt");
     //outputFile.precision(6);
     //outputFile.setf(ios::scientific, ios::floatfield);
@@ -33,11 +32,10 @@ StifflSolver::StifflSolver(int NYDIM_PAR, double *values, double t_begin, double
 
 StifflSolver::~StifflSolver()
 {
-    delete mixture;
     //outputFile.close();
 }
 
-void StifflSolver::performIntegration(RealType afullTime)
+void StifflSolver::performIntegration(Mixture &mix, RealType afullTime)
 {
     time = 0.0;
 	int stifflCode;
@@ -46,24 +44,25 @@ void StifflSolver::performIntegration(RealType afullTime)
     h = 1.0e-13;
 	tfin = afullTime;
 
+	mixture = &mix;
+
 	prepareStiffl();
 
     //printHeadingToFile();
     //printToFile();
 
-    // Производим интегрирование.
-		
-	(Y[0])[0] = mixture->concentrations[0];
-	(Y[0])[1] = mixture->concentrations[1];
-	(Y[0])[2] = mixture->concentrations[2];
-	(Y[0])[3] = mixture->temperature;
+	for (int i = 0; i < mixture->nSubstances; ++i) {
+		(Y[0])[i] = mixture->concentrations[i];
+	}
+	(Y[0])[mixture->nSubstances] = mixture->temperature;
 
+	// Производим интегрирование.
 	stifflCode = STIFFL();
 
-	mixture->concentrations[0] = (Y[0])[0];
-	mixture->concentrations[1] = (Y[0])[1];
-	mixture->concentrations[2] = (Y[0])[2];
-	mixture->temperature = (Y[0])[3];
+	for (int i = 0; i < mixture->nSubstances; ++i) {
+		mixture->concentrations[i] = (Y[0])[i];
+	}
+	mixture->temperature = (Y[0])[mixture->nSubstances];
 
 	mixture->molecularWeight = mixture->calculateMolecularWeight();
 	mixture->pressure = mixture->calculatePressure();
@@ -118,13 +117,23 @@ RealType StifflSolver::calculateRateForForwardReaction(int i)
 {
     RealType k;
     RealType t = mixture->temperature;
+	int j = 0;
+
+	//if (mixture->reactions[i].nTemperatureRanges > 1) {
+	//	for (int kk = mixture->reactions[i].nTemperatureRanges; kk > 0; kk--) {
+	//		if (t >= mixture->reactions[i].temperatureLow[kk-1]) {
+	//			j = kk;
+	//			break;
+	//		}
+	//	}
+	//}
 
     // Универсальная газовая постоянная, ккал / (моль*К).
     const RealType r = 0.001985846;
 
-    k = exp(log(t) * mixture->reactions[i].n - 
-        mixture->reactions[i].activationEnergy / (r * t) + 
-        2.30258 * mixture->reactions[i].log10A);
+    k = exp(log(t) * mixture->reactions[i].n[j] - 
+        mixture->reactions[i].activationEnergy[j] / (r * t) + 
+        2.30258 * mixture->reactions[i].log10A[j]);
 
     return k;
 }
@@ -174,9 +183,9 @@ void StifflSolver::printToFile()
         sumConc += mixture->concentrations[i];
     }
     outputFile << t << "\t" <<
-        mixture->concentrations[1] / sumConc * 100 << "\t" <<
         mixture->concentrations[2] / sumConc * 100 << "\t" <<
-        mixture->concentrations[0] / sumConc * 100 << "\t" <<
+        mixture->concentrations[6] / sumConc * 100 << "\t" <<
+        mixture->concentrations[1] / sumConc * 100 << "\t" <<
         sumConc << "\t" <<
         (mixture->fullEnergy + mixture->pressure * mixture->volume) * 1.0e-3 << "\t" <<
         mixture->fullEnergy * 1.0e-3 << "\t" <<
@@ -189,21 +198,8 @@ void StifflSolver::printToFile()
 
 void StifflSolver::printHeadingToFile()
 {
-    outputFile << "t (s)\tO2\tO3\tO\tN (1/cm3)\tH (J/g)\tU (J/g)\tT (K)\tP (atm)\t";
+    outputFile << "t (s)\tH2O\tO2\tH2\tN (1/cm3)\tH (J/g)\tU (J/g)\tT (K)\tP (atm)\t";
     outputFile << "Mu (g/mole)\t\tRho (g/cm3)\tV(m3/kg)" << endl;
-}
-
-void StifflSolver::updateMoleFractions(RealType *vf)
-{
-    RealType sumConc = 0.0;
-
-    for (int i = 0; i < mixture->nSubstances; i++) {
-        sumConc += mixture->concentrations[i];
-    }
-
-    for (int i = 0; i < mixture->nSubstances; i++) {
-        vf[i] = mixture->concentrations[i] / sumConc * 100;
-    }
 }
 
 RealType StifflSolver::getPressure()
@@ -224,7 +220,11 @@ int StifflSolver::IFNSH()
 {
 	//mixture->molecularWeight = mixture->calculateMolecularWeight();
 	//mixture->pressure = mixture->calculatePressure();
-	//mixture->temperature = (Y[0])[3];
+	//mixture->temperature = Y[0][mixture->nSubstances];
+
+ //   for (int i = 0; i < mixture->nSubstances; ++i) {
+ //       mixture->concentrations[i] = Y[0][i];
+ //   }
 	//printToFile();
 
 	return 0;
@@ -232,36 +232,97 @@ int StifflSolver::IFNSH()
 
 int StifflSolver::DIFFUN(double **YY, double *F)
 {
-	mixture->concentrations[0] = Y[0][0];
-	mixture->concentrations[1] = Y[0][1];
-	mixture->concentrations[2] = Y[0][2];
-	mixture->temperature = Y[0][3];
+	RealType kf;
+	RealType kr;
+	RealType multiplicationOfReagents;
+	RealType multiplicationOfProducts;
+	RealType skorost;
+	RealType sumConc;
+	bool withThirdBody = false;
 
-	concOfM = 0;
-	for (int i = 0; i < mixture->nSubstances; i++) {
-		concOfM += mixture->concentrations[i];
+	// TODO: ввести в StifflSolver переменную-член 
+	// с количеством уравнений nEquations.
+	mixture->temperature = (*YY)[mixture->nSubstances];
+
+	for (int i = 0; i <= mixture->nSubstances + 1; ++i) {
+		F[i] = 0.0;
 	}
-	k1f = calculateRateForForwardReaction(0);
-	k2f = calculateRateForForwardReaction(1);
-	k3f = calculateRateForForwardReaction(2);
 
-	k1r = calculateRateForBackReaction(0, k1f);
-	k2r = calculateRateForBackReaction(1, k2f);
-	k3r = calculateRateForBackReaction(2, k3f);
+	for (int i = 0; i < mixture->nReactions; ++i) {
+		kf = calculateRateForForwardReaction(i);
+		kr = calculateRateForBackReaction(i, kf);
 
-    F[0] = rightSideForO(
-        mixture->concentrations[0], 
-        mixture->concentrations[2],
-        mixture->concentrations[1]);
-    F[1] = rightSideForO2(
-        mixture->concentrations[0],
-        mixture->concentrations[2],
-        mixture->concentrations[1]);
-    F[2] = rightSideForO3(
-        mixture->concentrations[0],
-        mixture->concentrations[2],
-        mixture->concentrations[1]);
+		multiplicationOfReagents = 1.0;
+		multiplicationOfProducts = 1.0;
 
+		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
+			if (mixture->reactions[i].reagents[j] == -1) {
+				withThirdBody = true;
+				continue;
+			}
+			multiplicationOfReagents *= (*YY)[mixture->reactions[i].reagents[j]];
+		}
+		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
+			if (mixture->reactions[i].products[j] == -1) {
+				withThirdBody = true;
+				continue;
+			}
+			multiplicationOfProducts *= (*YY)[mixture->reactions[i].products[j]];
+		}
+
+		if (mixture->reactions[i].direction == 0) {
+			// Реакция обратимая.
+			skorost = kf * multiplicationOfReagents - kr * multiplicationOfProducts;
+		}
+		else if (mixture->reactions[i].direction == 1) {
+			// Реакция необратимая.
+			skorost = kf * multiplicationOfReagents;
+		}
+		else {
+			cout << "Unknown direction of reaction '"
+				 << mixture->reactions[i].nameOfReaction << "'." << endl;
+			exit(-1);
+		}
+
+		sumConc = 0.0;
+		if (withThirdBody) {
+			if (mixture->reactions[i].nEff) {
+				//cout << "Reaction " << i << endl;
+				for (int kkk = 0; kkk < mixture->getNSpecies(); ++kkk) {
+					sumConc += mixture->reactions[i].pEff[kkk] * (*YY)[kkk];
+					//cout << setw(3) 
+					//	 << mixture->substances[kkk]->nameOfSubstance 
+					//	 << " " << mixture->reactions[i].pEff[kkk] << "; ";
+				}
+				//cout << endl;
+			}
+			else {
+				for (int kkk = 0; kkk < mixture->getNSpecies(); ++kkk) {
+					sumConc += (*YY)[kkk];
+				}
+			}
+		}
+		if (withThirdBody) {
+			skorost *= sumConc;
+		}
+		withThirdBody = false;
+
+		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
+			if (mixture->reactions[i].reagents[j] == -1) {
+				continue;
+			}
+			F[mixture->reactions[i].reagents[j]] -= skorost;
+		}
+
+		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
+			if (mixture->reactions[i].products[j] == -1) {
+				continue;
+			}
+			F[mixture->reactions[i].products[j]] += skorost;
+		}
+	}
+
+	// Cчитаем правую часть уравнения для температуры.
 	RealType u = 0;
     RealType v = 0;
 
@@ -273,17 +334,11 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 		v += (mixture->R_J_OVER_KMOL_K - 
             mixture->substances[i]->molecularWeight *
             mixture->calculateSubstanceCp(i, mixture->temperature)) * 
-            mixture->concentrations[i];
+            (*YY)[i];
 	}
 
-	F[3] = u / v;
+	F[mixture->nSubstances] = u / v;
 
 	return 0;
 }
 
-void StifflSolver::updateMassFractions(RealType *mf)
-{
-	for (int i = 0; i < mixture->nSubstances; ++i) {
-		mf[i] = mixture->y_[i] * 100.0;
-	}
-}

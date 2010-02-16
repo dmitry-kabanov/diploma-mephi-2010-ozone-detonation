@@ -39,7 +39,7 @@ public:
      * @param f мольная доля исходного вещества
      * @return новое значение скорости поршня
      */
-    RealType calculateVelocity(RealType f);
+    RealType calculateVelocity(RealType *volumeFractions);
 private:
     /**
      * Читает из файла с именем fileOfPistonData табличные данные
@@ -53,6 +53,10 @@ private:
 	 * Количество строк в файле с табличными данными для поршня.
 	 */
     int nRows_;
+	/**
+	 * Номер вещества, по которому подбираются параметры для поршня.
+	 */
+	int numberOfSpecies_;
 	/**
 	 * Массив давлений.
 	 */

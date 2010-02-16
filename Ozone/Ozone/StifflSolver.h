@@ -41,11 +41,11 @@ public:
      * @param fileOfReactions       имя файла с реакциями
 	 * @param fileOfMoleFractions   имя файла с мольными долями
      */
-	StifflSolver(int NYDIM_PAR, double *values, double t_begin, double t_end,
-					 double t_step_begin,
-					 const char *fileOfSubstances,
-                     const char *fileOfReactions,
-                     const char *fileOfMoleFractions);
+	StifflSolver(int NYDIM_PAR, 
+		double *values,
+		double t_begin,
+		double t_end,
+		double t_step_begin);
     /**
      * Деструктор класса.
      */
@@ -53,26 +53,11 @@ public:
     /**
     * Производит интегрирование системы ОДУ.
     *
+	* @param mix       смесь, в которой происходят химические реакции
     * @param aFullTime временной интервал, на котором 
-    * производится интегрирование.
+    * производится интегрирование
     */
-    void performIntegration(RealType aFullTime);
-    /**
-     * Обновляет значения мольных долей компонентов смеси. Значения передаются 
-	 * в газодинамический расчет.
-     *
-     * @param vf указатель на массив, в который пишутся
-     * новые значения мольных долей.
-     */
-    void updateMoleFractions(RealType *vf);
-	/**
-	* Обновляет значения массовых долей компонентов смеси. Значения передаются 
-	* в газодинамический расчет.
-	*
-	* @param mf указатель на массив, в который пишутся
-	* новые значения массовых долей.
-	*/
-	void updateMassFractions(RealType *mf);
+    void performIntegration(Mixture &mix, RealType aFullTime);
     /**
      * Возвращает значение давления в смеси.
      *

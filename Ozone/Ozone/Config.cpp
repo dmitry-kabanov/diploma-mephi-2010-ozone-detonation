@@ -109,6 +109,9 @@ void Config::readFileOfConfig(const char *filename)
 		else if (parName == "fileOfFractions") {
 			is >> fileOfFractions_;
 		}
+		else if (parName == "fileOfPiston") {
+			is >> fileOfPiston_;
+		}
 		else {
 			cerr << "'" << parName << "' is not a known parameter." << endl;
 		}
