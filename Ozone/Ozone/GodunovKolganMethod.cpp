@@ -474,13 +474,14 @@ void GodunovKolganMethod::run()
 			rho[i] = m[i] / (x[i] - x[i-1]);
 			u_energy[i] = e[i] - u[i] * u[i] / 2.0;
 			mixture->setStateWithURhoX(u_energy[i], rho[i], volumeFractions[i]);
-			kinetics->performIntegration(*mixture, dt);
+            //if (volumeFractions[i][2] > 0.01) {
+			    kinetics->performIntegration(*mixture, dt);
+            //}
 			deltaTemperature[i] = mixture->getTemperature() -
 				mixture->getOldTemperature();
 			mixture->updateMoleFractions(volumeFractions[i]);
 			p[i] = mixture->calculatePressure();
 			rho_u[i] = rho[i] * u[i];
-			//gamma[i] = p[i] / (rho[i] * u_energy[i]) + 1;
 			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
 		//cout << "j = " << j << endl;
@@ -509,6 +510,7 @@ void GodunovKolganMethod::run()
 			cout << setw(6) << "Max dT" << " = " << maxdT << endl;
 			cout << endl;
 
+            //plotter_->plotData(j, *this);
 			modifyMesh();
 			plotter_->plotData(j, *this);
 		}
@@ -564,7 +566,7 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 		mixture->setStateWithURhoX(u_energy[i+2], 
 			rho[i+2], 
 			volumeFractions[i+2]);
-		p[i+2] = kinetics->getPressure();
+		p[i+2] = mixture->calculatePressure();
 
 		// Делим ячейку слева от фронта ударной волны пополам.
 		p[i+1]   = p[i];
@@ -601,12 +603,12 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 void GodunovKolganMethod::modifyMesh()
 {
 	int nMinConcOfO3 = 1;
-	int nNoUnion	 = 10000;
-	int nUnitedCells = 1000;
+	int nNoUnion	 = 50;
+	int nUnitedCells = 50;
 	int i;
 
 	for (i = 1; i < frontCellNumber_; ++i) {
-		if (volumeFractions[i][2] >= 0.01) {
+		if (volumeFractions[i][2] >= 80) {
 			break;
 		}
 		nMinConcOfO3 = i;
@@ -619,10 +621,21 @@ void GodunovKolganMethod::modifyMesh()
 		return;
 	}
 
+    cout << "Objedineniye yacheek" << endl;
+
 	if (reaction_start % 2 != 0) {
 		reaction_start--;
 	}
 
+    RealType l_mass = 0.0;
+    for (i = 1; i <= reaction_start; i++) {
+        l_mass += m[i];
+    }
+    RealType delta_m0 = m[reaction_start+1];
+    RealType a = (2 * l_mass - delta_m0 * reaction_start) / (RealType) reaction_start;
+    RealType b = (2 * delta_m0 * reaction_start - 2 * l_mass) / 
+        ((RealType) reaction_start * (reaction_start-1));
+    bool objedineniye = false;
 	RealType dx_left;
 	RealType dx_right;
 	RealType dx_new;
@@ -635,93 +648,122 @@ void GodunovKolganMethod::modifyMesh()
 	RealType *mf_new   = new RealType[mixture->getNSpecies()];
 	int offset;
 
-	for (i = 1; i < reaction_start; i += 2) {
-		dx_left  = x[i] - x[i-1];
-		dx_right = x[i+1] - x[i];
-		dx_new   = dx_left + dx_right;
-		m_left   = rho[i] * dx_left;
-		m_right  = rho[i+1] * dx_right;
-		
-		rho_new = (m_left + m_right) / dx_new;
-		m_new = rho_new * dx_new;
-		
-		mixture->setStateWithURhoX(u_energy[i], 
-			rho[i], 
-			volumeFractions[i]);
-		mixture->updateMassFractions(mf_left);
-		mixture->setStateWithURhoX(u_energy[i+1], 
-			rho[i+1], 
-			volumeFractions[i+1]);
-		mixture->updateMassFractions(mf_right);
+	for (i = 1; i < reaction_start; i++) {
+        //if (objedineniye == true) {
+        //    objedineniye = false;
+        //    continue;
+        //}
 
-		// Величина, обратная молекулярному весу объединенной ячейки.
-		RealType invMWeightNew = 0;
+        if (m[i] < (a + b * (i-1))) {
+            //objedineniye = true;
+		    dx_left  = x[i] - x[i-1];
+		    dx_right = x[i+1] - x[i];
+		    dx_new   = dx_left + dx_right;
+		    m_left   = rho[i] * dx_left;
+		    m_right  = rho[i+1] * dx_right;
+    		
+		    rho_new = (m_left + m_right) / dx_new;
+		    m_new = rho_new * dx_new;
+    		
+		    mixture->setStateWithURhoX(u_energy[i], 
+			    rho[i], 
+			    volumeFractions[i]);
+		    mixture->updateMassFractions(mf_left);
+		    mixture->setStateWithURhoX(u_energy[i+1], 
+			    rho[i+1], 
+			    volumeFractions[i+1]);
+		    mixture->updateMassFractions(mf_right);
 
-		for (int j = 0; j < mixture->getNSpecies(); ++j) {
-			mf_new[j] = (m_left * mf_left[j] + m_right * mf_right[j]) / m_new;
-			invMWeightNew += mf_new[j] / 
-				mixture->substances[j]->molecularWeight;
-		}
-		invMWeightNew /= 100.0;
-		for (int j = 0; j < mixture->getNSpecies(); ++j) {
-			volumeFractions[i][j] = mf_new[j] / invMWeightNew /
-				mixture->substances[j]->molecularWeight;
-		}
+		    // Величина, обратная молекулярному весу объединенной ячейки.
+		    RealType invMWeightNew = 0;
 
-		u[i]		= (m_left * u[i] + m_right * u[i+1]) / m_new;
-		e[i]		= (m_left * e[i] + m_right * e[i+1]) / m_new;
-		u_energy[i] = e[i] - u[i] * u[i] / 2.0;
-		rho[i]		= rho_new;
-		m[i]		= m_new;
+		    for (int j = 0; j < mixture->getNSpecies(); ++j) {
+			    mf_new[j] = (m_left * mf_left[j] + m_right * mf_right[j]) / m_new;
+			    invMWeightNew += mf_new[j] / 
+				    mixture->substances[j]->molecularWeight;
+		    }
+		    invMWeightNew /= 100.0;
+		    for (int j = 0; j < mixture->getNSpecies(); ++j) {
+			    volumeFractions[i][j] = mf_new[j] / invMWeightNew /
+				    mixture->substances[j]->molecularWeight;
+		    }
 
-		mixture->setStateWithURhoX(u_energy[i], 
-			rho[i], 
-			volumeFractions[i]);
-		p[i] = kinetics->getPressure();
-		rho_u[i] = rho[i] * u[i];
-		rho_e[i] = p[i] / (gamma[i] - 1);
-		x[i] = x[i+1];
-		x_center[i] = (x[i-1] + x[i+1]) / 2.0;
+		    u[i]		= (m_left * u[i] + m_right * u[i+1]) / m_new;
+		    e[i]		= (m_left * e[i] + m_right * e[i+1]) / m_new;
+		    u_energy[i] = e[i] - u[i] * u[i] / 2.0;
+		    rho[i]		= rho_new;
+		    m[i]		= m_new;
+
+		    mixture->setStateWithURhoX(u_energy[i], 
+			    rho[i], 
+			    volumeFractions[i]);
+		    p[i] = mixture->calculatePressure();
+		    rho_u[i] = rho[i] * u[i];
+		    rho_e[i] = p[i] / (gamma[i] - 1);
+		    x[i] = x[i+1];
+		    x_center[i] = (x[i-1] + x[i+1]) / 2.0;
+            for (int kkk = i+1; kkk < meshSize_; ++kkk) {
+            	offset = kkk+1;
+            	m[kkk] = m[offset];
+            	u[kkk] = u[offset];
+            	e[kkk] = e[offset];
+            	rho[kkk] = rho[offset];
+            	u_energy[kkk] = u_energy[offset];
+            	p[kkk] = p[offset];
+            	x[kkk] = x[offset];
+            	x_center[kkk] = x_center[offset];
+            	rho_u[kkk] = rho_u[offset];
+            	rho_e[kkk] = rho_e[offset];
+            	for (int j = 0; j < mixture->getNSpecies(); j++) {
+            		volumeFractions[kkk][j] = volumeFractions[offset][j];
+            	}
+                gamma[kkk] = gamma[offset];
+                shock_wave_front[kkk] = shock_wave_front[offset];
+            }
+            meshSize_--;
+            frontCellNumber_--;
+            reaction_start--;
+        }
 	}
 
-	// Переиндексируем сетку.
-	for (i = 2; i <= reaction_start / 2; i++) {
-		offset = i + i - 1;
-		m[i] = m[offset];
-		u[i] = u[offset];
-		e[i] = e[offset];
-		rho[i] = rho[offset];
-		u_energy[i] = u_energy[offset];
-		p[i] = p[offset];
-		x[i] = x[offset];
-		x_center[i] = x_center[offset];
-		rho_u[i] = rho_u[offset];
-		rho_e[i] = rho_e[offset];
-		for (int j = 0; j < mixture->getNSpecies(); j++) {
-			volumeFractions[i][j] = volumeFractions[offset][j];
-		}
-	}
+	//// Переиндексируем сетку.
+	//for (i = 2; i <= reaction_start / 2; i++) {
+	//	offset = i + i - 1;
+	//	m[i] = m[offset];
+	//	u[i] = u[offset];
+	//	e[i] = e[offset];
+	//	rho[i] = rho[offset];
+	//	u_energy[i] = u_energy[offset];
+	//	p[i] = p[offset];
+	//	x[i] = x[offset];
+	//	x_center[i] = x_center[offset];
+	//	rho_u[i] = rho_u[offset];
+	//	rho_e[i] = rho_e[offset];
+	//	for (int j = 0; j < mixture->getNSpecies(); j++) {
+	//		volumeFractions[i][j] = volumeFractions[offset][j];
+	//	}
+	//}
 
-	offset = reaction_start / 2;
-	meshSize_ -= offset;
-	frontCellNumber_ -= offset;
-	for (i = reaction_start / 2 + 1; i <= meshSize_; i++) {
-		m[i] = m[i+offset];
-		u[i] = u[i+offset];
-		e[i] = e[i+offset];
-		rho[i] = rho[i+offset];
-		u_energy[i] = u_energy[i+offset];
-		p[i] = p[i+offset];
-		x[i] = x[i+offset];
-		x_center[i] = x_center[i + offset];
-		rho_u[i] = rho_u[i+offset];
-		rho_e[i] = rho_e[i+offset];
-		for (int j = 0; j < mixture->getNSpecies(); j++) {
-			volumeFractions[i][j] = volumeFractions[i+offset][j];
-		}
-		shock_wave_front[i] = shock_wave_front[i+offset];
-		gamma[i] = gamma[i+offset];
-	}
+	//offset = reaction_start / 2;
+	//meshSize_ -= offset;
+	//frontCellNumber_ -= offset;
+	//for (i = reaction_start / 2 + 1; i <= meshSize_; i++) {
+	//	m[i] = m[i+offset];
+	//	u[i] = u[i+offset];
+	//	e[i] = e[i+offset];
+	//	rho[i] = rho[i+offset];
+	//	u_energy[i] = u_energy[i+offset];
+	//	p[i] = p[i+offset];
+	//	x[i] = x[i+offset];
+	//	x_center[i] = x_center[i + offset];
+	//	rho_u[i] = rho_u[i+offset];
+	//	rho_e[i] = rho_e[i+offset];
+	//	for (int j = 0; j < mixture->getNSpecies(); j++) {
+	//		volumeFractions[i][j] = volumeFractions[i+offset][j];
+	//	}
+	//	shock_wave_front[i] = shock_wave_front[i+offset];
+	//	gamma[i] = gamma[i+offset];
+	//}
 
 	delete [] mf_left;
 	delete [] mf_right;
