@@ -11,6 +11,9 @@ const RealType
     ONE_BAR = 100000.0,
 	
 	// Комнатная температура, К
-	NORMAL_TEMPERATURE = 298.15;
+	NORMAL_TEMPERATURE = 298.15,
+
+	// Универсальная газовая постоянная, ккал / (моль*К).
+	GAS_CONSTANT_KCAL_OVER_MOL_K = 0.001985846;
 
 #endif

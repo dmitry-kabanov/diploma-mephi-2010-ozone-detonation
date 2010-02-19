@@ -113,31 +113,6 @@ RealType StifflSolver::rightSideForO2(RealType concOfO,
     return m1 + m2 + m3;
 }
 
-RealType StifflSolver::calculateRateForForwardReaction(int i)
-{
-    RealType k;
-    RealType t = mixture->temperature;
-	int j = 0;
-
-	//if (mixture->reactions[i].nTemperatureRanges > 1) {
-	//	for (int kk = mixture->reactions[i].nTemperatureRanges; kk > 0; kk--) {
-	//		if (t >= mixture->reactions[i].temperatureLow[kk-1]) {
-	//			j = kk;
-	//			break;
-	//		}
-	//	}
-	//}
-
-    // Универсальная газовая постоянная, ккал / (моль*К).
-    const RealType r = 0.001985846;
-
-    k = exp(log(t) * mixture->reactions[i].n[j] - 
-        mixture->reactions[i].activationEnergy[j] / (r * t) + 
-        2.30258 * mixture->reactions[i].log10A[j]);
-
-    return k;
-}
-
 RealType StifflSolver::calculateRateForBackReaction(int i, RealType kf)
 {
     RealType t = mixture->temperature;
@@ -259,7 +234,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 	
 
 	for (int i = 0; i < mixture->nReactions; ++i) {
-		kf = calculateRateForForwardReaction(i);
+		kf = mixture->reactions[i].calculateConstantRate(mixture->temperature);
 
 		multiplicationOfReagents = 1.0;
 		multiplicationOfProducts = 1.0;

@@ -9,6 +9,9 @@
  * Реализация класса Reaction.
  */
 #include "Reaction.h"
+#include <cmath>
+#include "constants.h"
+using namespace std;
 
 Reaction::Reaction()
 {
@@ -43,4 +46,18 @@ void Reaction::allocateMemoryForCollisionEfficiency(int n)
 	for (int i = 0; i < n; ++i) {
 		pEff[i] = 1.0;
 	}
+}
+
+RealType Reaction::calculateConstantRate(RealType t)
+{
+	RealType k;
+	// TODO: сделать, чтоб возможно было выбрать несколько температурных диапазонов.
+	int j = 0;
+
+	k = exp(log(t) * n[j] - 
+		activationEnergy[j] / (GAS_CONSTANT_KCAL_OVER_MOL_K * t) + 
+		2.30258 * log10A[j]
+	);
+
+	return k;
 }
