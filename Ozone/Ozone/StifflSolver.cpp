@@ -114,17 +114,9 @@ int StifflSolver::IFNSH()
 
 int StifflSolver::DIFFUN(double **YY, double *F)
 {
-	RealType multiplicationOfReagents;
-	RealType multiplicationOfProducts;
 	RealType reactionRate;
-	RealType sumConc;
-	bool withThirdBody = false;
 	// Порядковый номер вещества. Вспомогательная переменная для читабельности.
 	int speciesNumber;
-	// Тепловой эффект реакции.
-	RealType q;
-	int nMoles;
-	RealType kc;
 
 	// TODO: ввести в StifflSolver переменную-член 
 	// с количеством уравнений nEquations.
@@ -139,69 +131,11 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 	
 
 	for (int i = 0; i < mixture->nReactions; ++i) {
-		kf = mixture->reactions[i].calculateConstantRate(mixture->temperature);
-
-		multiplicationOfReagents = 1.0;
-		multiplicationOfProducts = 1.0;
-		nMoles = 0;
-		q = 0;
-
-		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
-			speciesNumber = mixture->reactions[i].reagents[j];
-			if (speciesNumber == -1) {
-				withThirdBody = true;
-				continue;
-			}
-			multiplicationOfReagents *= (*YY)[speciesNumber];
-			q -= mixture->gibbsEnergy[speciesNumber];
-			nMoles--;
-		}
-		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
-			speciesNumber = mixture->reactions[i].products[j];
-			if (speciesNumber == -1) {
-				withThirdBody = true;
-				continue;
-			}
-			multiplicationOfProducts *= (*YY)[speciesNumber];
-			q += mixture->gibbsEnergy[speciesNumber];
-			nMoles++;
-		}
-		
-		// Вычисляем константу равновесия по концентрации.
-		kc  = exp(-q / (mixture->R_J_OVER_KMOL_K * mixture->temperature));
-		kc *= exp(-log(10 * mixture->K_BOLTZMANN * mixture->temperature) * nMoles);
-
-		if (mixture->reactions[i].direction == 0) {
-			// Реакция обратимая.
-			//kr = kf / kc;
-			reactionRate = kf * (multiplicationOfReagents - multiplicationOfProducts / kc);
-		}
-		else if (mixture->reactions[i].direction == 1) {
-			// Реакция необратимая.
-			reactionRate = kf * multiplicationOfReagents;
-		}
-		else {
-			cout << "Unknown direction of reaction '"
-				 << mixture->reactions[i].nameOfReaction << "'." << endl;
-			exit(-1);
-		}
-
-		sumConc = 0.0;
-		if (withThirdBody) {
-			if (mixture->reactions[i].nEff) {
-				//cout << "Reaction " << i << endl;
-				for (int j = 0; j < mixture->getNSpecies(); ++j) {
-					sumConc += mixture->reactions[i].pEff[j] * (*YY)[j];
-				}
-			}
-			else {
-				for (int j = 0; j < mixture->getNSpecies(); ++j) {
-					sumConc += (*YY)[j];
-				}
-			}
-			reactionRate *= sumConc;
-		}
-		withThirdBody = false;
+		reactionRate = mixture->reactions[i].calculateReactionRate(
+			*YY,
+			mixture->temperature,
+			mixture->gibbsEnergy,
+			mixture->getNSpecies());
 
 		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
 			speciesNumber = mixture->reactions[i].reagents[j];

@@ -276,7 +276,8 @@ void Mixture::fillReagents()
         for (int j = 0; j < reactions[i].nReagents; j++) {
             if (subs[j] == "M") {
                 reactions[i].reagents[j] = -1; // Признак вещества M
-                continue;
+				reactions[i].withThirdBody = true;
+				continue;
             }
             for (int jj = 0; jj < nSubstances; jj++) {
                 if (subs[j] == substances[jj]->nameOfSubstance) {

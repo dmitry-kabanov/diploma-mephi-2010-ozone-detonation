@@ -42,7 +42,25 @@ public:
 	 * @return вычисленное значение константы скорости прямой реакции
 	 */
 	RealType calculateConstantRate(RealType t);
-    /**
+	/**
+	 * Вычисляет скорость реакции при заданной температуре.
+	 *
+	 * @param YY			массив значений концентраций компонентов смеси
+	 * @param t				температура, К
+	 * @param gibbsEnergies значения энергий Гиббса для всех компонентов смеси
+	 * @param nSpecies		количество веществ в смеси
+	 * @return вычисленное	значение скорости реакции
+	 */
+	RealType calculateReactionRate(double *Y, RealType t, RealType *gibbsEnergies, int nSpecies);
+	RealType multiplicationOfReagents;
+	RealType multiplicationOfProducts;
+	RealType q;
+	int nMoles;
+	RealType kc;
+	RealType kf;
+	bool withThirdBody;
+	RealType reactionRate_;
+	/**
      * Тип реакции. Если равен 0, то реакция зависит от температуры,
      * если 1, то реакция зависит от давления.
      */

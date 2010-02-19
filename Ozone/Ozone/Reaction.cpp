@@ -17,6 +17,7 @@ Reaction::Reaction()
 {
 	nEff = false;
 	pEff = 0;
+	withThirdBody = false;
 }
 
 Reaction::~Reaction()
@@ -60,4 +61,71 @@ RealType Reaction::calculateConstantRate(RealType t)
 	);
 
 	return k;
+}
+
+RealType Reaction::calculateReactionRate(double *Y, 
+										 RealType t, 
+										 RealType *gibbsEnergies, 
+										 int nSpecies)
+{
+	kf = calculateConstantRate(t);
+	multiplicationOfReagents = 1.0;
+	multiplicationOfProducts = 1.0;
+	nMoles = 0;
+	q = 0;
+	RealType sumConc;
+
+	for (int j = 0; j < nReagents; ++j) {
+		if (reagents[j] == -1) {
+			continue;
+		}
+		multiplicationOfReagents *= Y[reagents[j]];
+		q -= gibbsEnergies[reagents[j]];
+		nMoles--;
+	}
+	for (int j = 0; j < nProducts; ++j) {
+		if (products[j] == -1) {
+			continue;
+		}
+		multiplicationOfProducts *= Y[products[j]];
+		q += gibbsEnergies[products[j]];
+		nMoles++;
+	}
+
+	// Вычисляем константу равновесия по концентрации.
+	kc  = exp(-q / (R_J_OVER_KMOL_K * t));
+	kc *= exp(-log(10 * K_BOLTZMANN * t) * nMoles);
+
+	if (direction == 0) {
+		// Реакция обратимая.
+		//kr = kf / kc;
+		reactionRate_ = kf * 
+			(multiplicationOfReagents - multiplicationOfProducts / kc);
+	}
+	else if (direction == 1) {
+		// Реакция необратимая.
+		reactionRate_ = kf * multiplicationOfReagents;
+	}
+	else {
+		cout << "Unknown direction of reaction '"
+			<< nameOfReaction << "'." << endl;
+		exit(-3);
+	}
+
+	sumConc = 0.0;
+	if (withThirdBody) {
+		if (nEff) {
+			for (int j = 0; j < nSpecies; ++j) {
+				sumConc += pEff[j] * Y[j];
+			}
+		}
+		else {
+			for (int j = 0; j < nSpecies; ++j) {
+				sumConc += Y[j];
+			}
+		}
+		reactionRate_ *= sumConc;
+	}
+
+	return reactionRate_;
 }

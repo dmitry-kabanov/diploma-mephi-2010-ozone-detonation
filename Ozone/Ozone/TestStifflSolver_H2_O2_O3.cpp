@@ -55,7 +55,7 @@ int main()
 	mix->updateMoleFractions(vf);
 
 	cout << "T = " << mix->getTemperature() << endl;
-	cout << "P = " << mix->calculatePressure() << endl;
+	cout << "P = " << mix->getPressure() << endl;
 	cout << "X(H2O)  = " << vf[2]  << endl;
 	cout << "X(O2) = " << vf[6] << endl;
 	cout << "X(H2) = " << vf[1] << endl;

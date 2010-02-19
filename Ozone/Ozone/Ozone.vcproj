@@ -170,10 +170,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\func_update.cpp"
-				>
-			</File>
-			<File
 				RelativePath=".\GodunovKolganMethod.cpp"
 				>
 			</File>
@@ -245,10 +241,6 @@
 			</File>
 			<File
 				RelativePath=".\func_riemann_solver.h"
-				>
-			</File>
-			<File
-				RelativePath=".\func_update.h"
 				>
 			</File>
 			<File
