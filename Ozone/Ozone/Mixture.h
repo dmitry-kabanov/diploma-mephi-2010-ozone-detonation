@@ -292,6 +292,10 @@ public:
      * Возвращает молекулярный вес смеси.
      */
     RealType getMolecularWeight();
+	/**
+	 * Массив энергий Гиббса для всех веществ смеси при заданной температуре.
+	 */
+	RealType *gibbsEnergy;
 
 private:
 	/**

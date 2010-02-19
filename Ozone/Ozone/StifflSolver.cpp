@@ -239,39 +239,61 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 	RealType skorost;
 	RealType sumConc;
 	bool withThirdBody = false;
+	// Порядковый номер вещества. Вспомогательная переменная для читабельности.
+	int speciesNumber;
+	// Тепловой эффект реакции.
+	RealType q;
+	int nMoles;
+	RealType kc;
 
 	// TODO: ввести в StifflSolver переменную-член 
 	// с количеством уравнений nEquations.
-	mixture->temperature = (*YY)[mixture->nSubstances];
+	mixture->temperature = (*YY)[mixture->getNSpecies()];
 
-	for (int i = 0; i <= mixture->nSubstances + 1; ++i) {
+	for (int i = 0; i < mixture->getNSpecies(); ++i) {
 		F[i] = 0.0;
+		mixture->gibbsEnergy[i] = mixture->calculateSubstanceGibbsEnergy(i, mixture->temperature);
 	}
+	F[mixture->getNSpecies()]   = 0.0;
+	F[mixture->getNSpecies()+1] = 0.0;
+	
 
 	for (int i = 0; i < mixture->nReactions; ++i) {
 		kf = calculateRateForForwardReaction(i);
-		kr = calculateRateForBackReaction(i, kf);
 
 		multiplicationOfReagents = 1.0;
 		multiplicationOfProducts = 1.0;
+		nMoles = 0;
+		q = 0;
 
 		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
-			if (mixture->reactions[i].reagents[j] == -1) {
+			speciesNumber = mixture->reactions[i].reagents[j];
+			if (speciesNumber == -1) {
 				withThirdBody = true;
 				continue;
 			}
-			multiplicationOfReagents *= (*YY)[mixture->reactions[i].reagents[j]];
+			multiplicationOfReagents *= (*YY)[speciesNumber];
+			q -= mixture->gibbsEnergy[speciesNumber];
+			nMoles--;
 		}
 		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
-			if (mixture->reactions[i].products[j] == -1) {
+			speciesNumber = mixture->reactions[i].products[j];
+			if (speciesNumber == -1) {
 				withThirdBody = true;
 				continue;
 			}
-			multiplicationOfProducts *= (*YY)[mixture->reactions[i].products[j]];
+			multiplicationOfProducts *= (*YY)[speciesNumber];
+			q += mixture->gibbsEnergy[speciesNumber];
+			nMoles++;
 		}
+		
+		// Вычисляем константу равновесия по концентрации.
+		kc  = exp(-q / (mixture->R_J_OVER_KMOL_K * mixture->temperature));
+		kc *= exp(-log(10 * mixture->K_BOLTZMANN * mixture->temperature) * nMoles);
 
 		if (mixture->reactions[i].direction == 0) {
 			// Реакция обратимая.
+			kr = kf / kc;
 			skorost = kf * multiplicationOfReagents - kr * multiplicationOfProducts;
 		}
 		else if (mixture->reactions[i].direction == 1) {
@@ -288,17 +310,13 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 		if (withThirdBody) {
 			if (mixture->reactions[i].nEff) {
 				//cout << "Reaction " << i << endl;
-				for (int kkk = 0; kkk < mixture->getNSpecies(); ++kkk) {
-					sumConc += mixture->reactions[i].pEff[kkk] * (*YY)[kkk];
-					//cout << setw(3) 
-					//	 << mixture->substances[kkk]->nameOfSubstance 
-					//	 << " " << mixture->reactions[i].pEff[kkk] << "; ";
+				for (int j = 0; j < mixture->getNSpecies(); ++j) {
+					sumConc += mixture->reactions[i].pEff[j] * (*YY)[j];
 				}
-				//cout << endl;
 			}
 			else {
-				for (int kkk = 0; kkk < mixture->getNSpecies(); ++kkk) {
-					sumConc += (*YY)[kkk];
+				for (int j = 0; j < mixture->getNSpecies(); ++j) {
+					sumConc += (*YY)[j];
 				}
 			}
 		}
@@ -308,17 +326,19 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 		withThirdBody = false;
 
 		for (int j = 0; j < mixture->reactions[i].nReagents; ++j) {
-			if (mixture->reactions[i].reagents[j] == -1) {
+			speciesNumber = mixture->reactions[i].reagents[j];
+			if (speciesNumber == -1) {
 				continue;
 			}
-			F[mixture->reactions[i].reagents[j]] -= skorost;
+			F[speciesNumber] -= skorost;
 		}
 
 		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
-			if (mixture->reactions[i].products[j] == -1) {
+			speciesNumber = mixture->reactions[i].products[j];
+			if (speciesNumber == -1) {
 				continue;
 			}
-			F[mixture->reactions[i].products[j]] += skorost;
+			F[speciesNumber] += skorost;
 		}
 	}
 

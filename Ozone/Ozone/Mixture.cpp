@@ -62,6 +62,8 @@ void Mixture::readFileOfSubstances(const char *filename)
 
     allocateMemoryForSubstances();
 
+	gibbsEnergy = new RealType[nSubstances];
+
     for (int i = 0; i < nSubstances; i++) {
         iFile >> substances[i]->nameOfSubstance;
         

@@ -8,13 +8,23 @@
 //
 //int main()
 //{
-//	Mixture *mix = new Mixture("Substances.txt", 
-//		"Reactions.txt", 
-//		"MoleFractions.txt");
+//	Mixture *mix = new Mixture("Substances_H2_O2_O3.txt", 
+//		"Reactions_H2_O2_O3_19.txt", 
+//		"MoleFractions_H2_O2_O3.txt");
+//	
+//	cout << "Substances" << endl;
+//	for (int i = 0; i < mix->getNSpecies(); ++i) {
+//		cout << setw(3) << i+1 << " " << mix->substances[i]->nameOfSubstance;
+//		cout << endl;
+//	}
+//	cout << endl;
+//
+//	cout << "Reactions" << endl;
 //	for (int i = 0; i < mix->nReactions; ++i) {
 //		cout << setw(3) << i+1 << " " 
 //			 << mix->reactions[i].nameOfReaction << endl;
 //	}
+//	cout << endl;
 //
 //	double *initialValues = new double [mix->getNSpecies() + 1];
 //	for (int i = 0; i < mix->getNSpecies() + 1; ++i) {
@@ -38,6 +48,7 @@
 //
 //	start = clock();
 //	mix->setStateWithTPX(2000, 30 * ONE_ATM, vf);
+//	cout << "Results" << endl;
 //	cout << "oldT = " << mix->getOldTemperature() << endl;
 //	cout << "oldP = " << mix->calculateOldPressure() << endl;
 //	kinetics.performIntegration(*mix, 1.0);
