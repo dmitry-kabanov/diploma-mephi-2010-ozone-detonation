@@ -491,6 +491,11 @@ void GodunovKolganMethod::run()
 		// Модифицируем ячейки, связанные с фронтом ударной волны.
 		modifyShockWaveFront_();
 
+		if (frontCellNumber_ == (meshSize_ - 1)) {
+			cout << "Lead shock has reached right bound of the domain." << endl;
+			exit(-128);
+		}
+		
 		if (j % 10 == 0) {
 			outD << j << " " << shock_wave_velocity << endl;
 		}
@@ -638,7 +643,7 @@ void GodunovKolganMethod::modifyMesh()
     RealType a = (2 * l_mass - delta_m0 * reaction_start) / (RealType) reaction_start;
     RealType b = (2 * delta_m0 * reaction_start - 2 * l_mass) / 
         ((RealType) reaction_start * (reaction_start-1));
-    bool objedineniye = false;
+
 	RealType dx_left;
 	RealType dx_right;
 	RealType dx_new;
