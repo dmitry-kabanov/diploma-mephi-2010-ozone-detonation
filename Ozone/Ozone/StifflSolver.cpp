@@ -23,7 +23,6 @@ StifflSolver::StifflSolver(int NYDIM_PAR,
 	: Stiffl(NYDIM_PAR, values, t_begin, t_end, t_step_begin)
 {
     h = t_step_begin;
-    timeStepForOutput = 100;
     mixture = 0;
     //outputFile.open("output.txt");
     //outputFile.precision(6);
@@ -69,88 +68,6 @@ void StifflSolver::performIntegration(Mixture &mix, RealType afullTime)
 
 }
 
-RealType StifflSolver::rightSideForO(RealType concOfO, 
-                                         RealType concOfO3, 
-                                         RealType concOfO2)
-{
-    RealType m1;
-    RealType m2;
-    RealType m3;
-
-    m1 = -k1f * concOfO * concOfO3 + k1r * concOfO2 * concOfO2;
-    m2 = k2f * concOfM * concOfO3 - k2r * concOfO2 * concOfO * concOfM;
-    m3 = 2 * k3f * concOfM * concOfO2 - 
-        2 * k3r * concOfO * concOfO * concOfM;
-
-    return m1 + m2 + m3;
-}
-
-RealType StifflSolver::rightSideForO3(RealType concOfO, 
-                                          RealType concOfO3, 
-                                          RealType concOfO2)
-{
-    RealType m1;
-    RealType m2;
-
-    m1 = -k1f * concOfO * concOfO3 + k1r * concOfO2 * concOfO2;
-    m2 = -k2f * concOfM * concOfO3 + k2r * concOfO2 * concOfO * concOfM;
-
-    return m1 + m2;
-}
-
-RealType StifflSolver::rightSideForO2(RealType concOfO, 
-                                         RealType concOfO3, 
-                                         RealType concOfO2)
-{
-    RealType m1;
-    RealType m2;
-    RealType m3;
-
-    m1 = 2 * k1f * concOfO * concOfO3 - 2 * k1r * concOfO2 * concOfO2;
-    m2 = k2f * concOfM * concOfO3 - k2r * concOfO2 * concOfO * concOfM;
-    m3 = - k3f * concOfM * concOfO2 + k3r * concOfO * concOfO * concOfM;
-
-    return m1 + m2 + m3;
-}
-
-RealType StifflSolver::calculateRateForBackReaction(int i, RealType kf)
-{
-    RealType t = mixture->temperature;
-    // Тепловой эффект реакции.
-    RealType q = 0.0;
-    int substanceNumber;
-    int nMoles = 0;
-
-    for (int j = 0; j < mixture->reactions[i].nProducts; j++) {
-        substanceNumber = mixture->reactions[i].products[j];
-        // Проверяем, что вещество не является веществом "М".
-        if (substanceNumber == -1) {
-            continue;
-        }
-        q += mixture->calculateSubstanceGibbsEnergy(substanceNumber, t);
-        nMoles++;
-    }
-
-    for (int j = 0; j < mixture->reactions[i].nReagents; j++) {
-        substanceNumber = mixture->reactions[i].reagents[j];
-        // Проверяем, что вещество не является веществом "М".
-        if (substanceNumber == -1) {
-            continue;
-        }
-        q -= mixture->calculateSubstanceGibbsEnergy(substanceNumber, t);
-        nMoles--;
-    }
-
-    // Константа равновесия.
-    // Значение константы скорости обратной реакции получается с помощью 
-    // константы скорости прямой реакции и константы равновесия.
-    RealType kc;
-    kc  = exp(-q / (mixture->R_J_OVER_KMOL_K * t));
-    kc *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);
-
-    return kf / kc;
-}
-
 void StifflSolver::printToFile()
 {
     RealType sumConc = 0.0;
@@ -177,16 +94,6 @@ void StifflSolver::printHeadingToFile()
     outputFile << "Mu (g/mole)\t\tRho (g/cm3)\tV(m3/kg)" << endl;
 }
 
-RealType StifflSolver::getPressure()
-{
-    return mixture->calculatePressure();
-}
-
-Mixture *StifflSolver::getMixture()
-{
-    return mixture;
-}
-
 void StifflSolver::PEDERV()
 {
 }
@@ -207,8 +114,6 @@ int StifflSolver::IFNSH()
 
 int StifflSolver::DIFFUN(double **YY, double *F)
 {
-	RealType kf;
-	RealType kr;
 	RealType multiplicationOfReagents;
 	RealType multiplicationOfProducts;
 	RealType reactionRate;
@@ -268,8 +173,8 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 
 		if (mixture->reactions[i].direction == 0) {
 			// Реакция обратимая.
-			kr = kf / kc;
-			reactionRate = kf * multiplicationOfReagents - kr * multiplicationOfProducts;
+			//kr = kf / kc;
+			reactionRate = kf * (multiplicationOfReagents - multiplicationOfProducts / kc);
 		}
 		else if (mixture->reactions[i].direction == 1) {
 			// Реакция необратимая.
@@ -294,8 +199,6 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 					sumConc += (*YY)[j];
 				}
 			}
-		}
-		if (withThirdBody) {
 			reactionRate *= sumConc;
 		}
 		withThirdBody = false;
@@ -336,4 +239,3 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 
 	return 0;
 }
-

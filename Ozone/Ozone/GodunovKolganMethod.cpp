@@ -483,7 +483,7 @@ void GodunovKolganMethod::run()
 			deltaTemperature[i] = mixture->getTemperature() -
 				mixture->getOldTemperature();
 			mixture->updateMoleFractions(volumeFractions[i]);
-			p[i] = mixture->calculatePressure();
+			p[i] = mixture->getPressure();
 			rho_u[i] = rho[i] * u[i];
 			rho_e[i] = p[i] / (gamma[i] - 1);
 		}
@@ -572,7 +572,7 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 		mixture->setStateWithURhoX(u_energy[i+2], 
 			rho[i+2], 
 			volumeFractions[i+2]);
-		p[i+2] = mixture->calculatePressure();
+		p[i+2] = mixture->getPressure();
 
 		// Делим ячейку слева от фронта ударной волны пополам.
 		p[i+1]   = p[i];
@@ -695,7 +695,7 @@ void GodunovKolganMethod::modifyMesh()
 		    mixture->setStateWithURhoX(u_energy[i], 
 			    rho[i], 
 			    volumeFractions[i]);
-		    p[i] = mixture->calculatePressure();
+		    p[i] = mixture->getPressure();
 		    rho_u[i] = rho[i] * u[i];
 		    rho_e[i] = p[i] / (gamma[i] - 1);
 		    x[i] = x[i+1];

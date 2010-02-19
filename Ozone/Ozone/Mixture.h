@@ -196,6 +196,7 @@ public:
      *  Вычисляет начальный молекулярный вес смеси в кг / кмоль.
      */
     void calculateInitialMolecularWeight();
+	RealType getPressure() const { return pressure; };
     /**
      * Молекулярный вес смеси, кг / кмоль.
      */
