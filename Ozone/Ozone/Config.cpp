@@ -112,6 +112,18 @@ void Config::readFileOfConfig(const char *filename)
 		else if (parName == "fileOfPiston") {
 			is >> fileOfPiston_;
 		}
+		else if (parName == "minConcentration") {
+			is >> minConcentration_;
+		}
+		else if (parName == "whatSpecies") {
+			is >> whatSpecies_;
+		}
+		else if (parName == "nCellsBehindLeadShock") {
+			is >> nCellsBehindLeadShock_;
+		}
+		else if (parName == "nCellsInReductionZone") {
+			is >> nCellsInReductionZone_;
+		}
 		else {
 			cerr << "'" << parName << "' is not a known parameter." << endl;
 		}

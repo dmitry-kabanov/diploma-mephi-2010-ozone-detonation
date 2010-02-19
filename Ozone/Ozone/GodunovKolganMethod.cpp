@@ -191,6 +191,7 @@ void GodunovKolganMethod::init_()
 	if (config_->getStart() == 0)	{
 		// Пишем начальные значения в файл.
 		plotter_->plotData(0, *this);
+		cout << "Starting from the very beginning." << endl;
 	} 
 	else
 	{
@@ -602,26 +603,28 @@ void GodunovKolganMethod::modifyShockWaveFront_()
 
 void GodunovKolganMethod::modifyMesh()
 {
-	int nMinConcOfO3 = 1;
-	int nNoUnion	 = 50;
-	int nUnitedCells = 50;
+	int nOfCellWithMinConc = 1;
+	int nNoUnion	 = config_->getNCellsBehindLeadShock();
+	int nUnitedCells = config_->getNCellsInReductionZone();
+	int numberOfSpecies = config_->getWhatSpecies();
+	RealType minConcentration = config_->getMinConcentration();
 	int i;
 
 	for (i = 1; i < frontCellNumber_; ++i) {
-		if (volumeFractions[i][2] >= 80) {
+		if (volumeFractions[i][numberOfSpecies] >= minConcentration) {
 			break;
 		}
-		nMinConcOfO3 = i;
+		nOfCellWithMinConc = i;
 	}
 
-	int reaction_start = min(nMinConcOfO3, frontCellNumber_ - nNoUnion);
+	int reaction_start = min(nOfCellWithMinConc, frontCellNumber_ - nNoUnion);
 
-	if (reaction_start < 2 * nUnitedCells) {
+	if (reaction_start < nUnitedCells) {
 		//cout << "No modifying of the mesh." << endl;
 		return;
 	}
 
-    cout << "Objedineniye yacheek" << endl;
+    //cout << "Objedineniye yacheek" << endl;
 
 	if (reaction_start % 2 != 0) {
 		reaction_start--;

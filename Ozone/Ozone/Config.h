@@ -72,6 +72,14 @@ public:
 	void setFileOfFractions(std::string val) { fileOfFractions_ = val; }
 	std::string getFileOfPiston() const { return fileOfPiston_; }
 	void setFileOfPiston(std::string val) { fileOfPiston_ = val; }
+	RealType getMinConcentration() const { return minConcentration_; }
+	void setMinConcentration(RealType val) { minConcentration_ = val; }
+	int getWhatSpecies() const { return whatSpecies_; }
+	void setWhatSpecies(int val) { whatSpecies_ = val; }
+	int getNCellsBehindLeadShock() const { return nCellsBehindLeadShock_; }
+	void setNCellsBehindLeadShock(int val) { nCellsBehindLeadShock_ = val; }
+	int getNCellsInReductionZone() const { return nCellsInReductionZone_; }
+	void setNCellsInReductionZone(int val) { nCellsInReductionZone_ = val; }
 
 private:
 	/**
@@ -120,6 +128,18 @@ private:
 	std::string fileOfFractions_;
 	// Имя файла, содержащего данные о поршне.
 	std::string fileOfPiston_;
+
+	// Концентрация вещества в зоне объединения, при которой объединение
+	// можно проводить.
+	RealType minConcentration_;
+	// Номер вещества, по которому смотрится концентрация.
+	int whatSpecies_;
+	// Количество ячеек за фронтом лидирующей ударной волны, в которых
+	// объединение ячеек производить нельзя.
+	int nCellsBehindLeadShock_;
+	// Минимальное количество ячеек в зоне их объединения,
+	// при котором объединение можно проводить.
+	int nCellsInReductionZone_;
 };
 
 #endif // CONFIG_H
