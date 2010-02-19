@@ -236,7 +236,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 	RealType kr;
 	RealType multiplicationOfReagents;
 	RealType multiplicationOfProducts;
-	RealType skorost;
+	RealType reactionRate;
 	RealType sumConc;
 	bool withThirdBody = false;
 	// Порядковый номер вещества. Вспомогательная переменная для читабельности.
@@ -294,11 +294,11 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 		if (mixture->reactions[i].direction == 0) {
 			// Реакция обратимая.
 			kr = kf / kc;
-			skorost = kf * multiplicationOfReagents - kr * multiplicationOfProducts;
+			reactionRate = kf * multiplicationOfReagents - kr * multiplicationOfProducts;
 		}
 		else if (mixture->reactions[i].direction == 1) {
 			// Реакция необратимая.
-			skorost = kf * multiplicationOfReagents;
+			reactionRate = kf * multiplicationOfReagents;
 		}
 		else {
 			cout << "Unknown direction of reaction '"
@@ -321,7 +321,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 			}
 		}
 		if (withThirdBody) {
-			skorost *= sumConc;
+			reactionRate *= sumConc;
 		}
 		withThirdBody = false;
 
@@ -330,7 +330,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 			if (speciesNumber == -1) {
 				continue;
 			}
-			F[speciesNumber] -= skorost;
+			F[speciesNumber] -= reactionRate;
 		}
 
 		for (int j = 0; j < mixture->reactions[i].nProducts; ++j) {
@@ -338,7 +338,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 			if (speciesNumber == -1) {
 				continue;
 			}
-			F[speciesNumber] += skorost;
+			F[speciesNumber] += reactionRate;
 		}
 	}
 
