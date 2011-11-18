@@ -24,7 +24,7 @@ namespace AirlineTicketLib
 	private:
 		std::string passengerName;
 		int numberOfMiles;
-		bool hasEliteSuperRewardsStatus();
+		bool hasEliteSuperRewardsStatus;
 	};
 
 }
