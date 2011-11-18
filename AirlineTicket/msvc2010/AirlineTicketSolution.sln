@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirlineTicketLib", "AirlineTicketLib\AirlineTicketLib.vcxproj", "{FDB6FAC2-8591-4EB6-B10E-105BCC281CA8}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AirlineTicketProgram", "AirlineTicketProgram\AirlineTicketProgram.vcxproj", "{C6DE671E-201B-43D7-A4BF-0FBBD7C4D70A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDB6FAC2-8591-4EB6-B10E-105BCC281CA8}.Debug|Win32.ActiveCfg = Debug|Win32
+		{FDB6FAC2-8591-4EB6-B10E-105BCC281CA8}.Debug|Win32.Build.0 = Debug|Win32
+		{FDB6FAC2-8591-4EB6-B10E-105BCC281CA8}.Release|Win32.ActiveCfg = Release|Win32
+		{FDB6FAC2-8591-4EB6-B10E-105BCC281CA8}.Release|Win32.Build.0 = Release|Win32
+		{C6DE671E-201B-43D7-A4BF-0FBBD7C4D70A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C6DE671E-201B-43D7-A4BF-0FBBD7C4D70A}.Debug|Win32.Build.0 = Debug|Win32
+		{C6DE671E-201B-43D7-A4BF-0FBBD7C4D70A}.Release|Win32.ActiveCfg = Release|Win32
+		{C6DE671E-201B-43D7-A4BF-0FBBD7C4D70A}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
