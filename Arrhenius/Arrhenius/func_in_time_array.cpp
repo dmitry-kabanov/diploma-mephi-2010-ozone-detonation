@@ -1,11 +1,11 @@
 /**
  * @file
- * @author Кабанов Дмитрий <kabanovdmitry@gmail.com>
+ * @author РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
  * @version
  * 
  * @section DESCRIPTION
  * 
- * Реализация функции in_time_array(int j)
+ * Р РµР°Р»РёР·Р°С†РёСЏ С„СѓРЅРєС†РёРё in_time_array(int j)
  */
 #include "func_in_time_array.h"
 

@@ -1,12 +1,12 @@
 /**
 * @file
 *
-* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
 * @version %I%
 *
 * @section DESCRIPTION
 *
-* Реализация класса RungeKuttaMethod.
+* Р РµР°Р»РёР·Р°С†РёСЏ РєР»Р°СЃСЃР° RungeKuttaMethod.
 */
 #include "StifflSolver.h"
 #include <iomanip>
@@ -55,7 +55,7 @@ void StifflSolver::performIntegration(Mixture &mix, RealType afullTime)
 	}
 	(Y[0])[mixture->nSubstances] = mixture->temperature;
 
-	// Производим интегрирование.
+	// РџСЂРѕРёР·РІРѕРґРёРј РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёРµ.
 	stifflCode = STIFFL();
 
 	for (int i = 0; i < mixture->nSubstances; ++i) {
@@ -115,11 +115,11 @@ int StifflSolver::IFNSH()
 int StifflSolver::DIFFUN(double **YY, double *F)
 {
 	RealType reactionRate;
-	// Порядковый номер вещества. Вспомогательная переменная для читабельности.
+	// РџРѕСЂСЏРґРєРѕРІС‹Р№ РЅРѕРјРµСЂ РІРµС‰РµСЃС‚РІР°. Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅР°СЏ РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ С‡РёС‚Р°Р±РµР»СЊРЅРѕСЃС‚Рё.
 	int speciesNumber;
 
-	// TODO: ввести в StifflSolver переменную-член 
-	// с количеством уравнений nEquations.
+	// TODO: РІРІРµСЃС‚Рё РІ StifflSolver РїРµСЂРµРјРµРЅРЅСѓСЋ-С‡Р»РµРЅ 
+	// СЃ РєРѕР»РёС‡РµСЃС‚РІРѕРј СѓСЂР°РІРЅРµРЅРёР№ nEquations.
 	mixture->temperature = (*YY)[mixture->getNSpecies()];
 
 	for (int i = 0; i < mixture->getNSpecies(); ++i) {
@@ -154,7 +154,7 @@ int StifflSolver::DIFFUN(double **YY, double *F)
 		}
 	}
 
-	// Cчитаем правую часть уравнения для температуры.
+	// CС‡РёС‚Р°РµРј РїСЂР°РІСѓСЋ С‡Р°СЃС‚СЊ СѓСЂР°РІРЅРµРЅРёСЏ РґР»СЏ С‚РµРјРїРµСЂР°С‚СѓСЂС‹.
 	RealType u = 0;
     RealType v = 0;
 

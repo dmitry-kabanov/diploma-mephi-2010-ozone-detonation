@@ -1,12 +1,12 @@
 /**
 * @file
 *
-* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
 * @version %I%
 *
 * @section DESCRIPTION
 *
-* Реализация класса Mixture.
+* Р РµР°Р»РёР·Р°С†РёСЏ РєР»Р°СЃСЃР° Mixture.
 */
 #include "Mixture.h"
 #include <cmath>
@@ -67,8 +67,8 @@ void Mixture::readFileOfSubstances(const char *filename)
     for (int i = 0; i < nSubstances; i++) {
         iFile >> substances[i]->nameOfSubstance;
         
-        iFile >> ch; // Ноль
-        iFile >> ch; // Ноль
+        iFile >> ch; // РќРѕР»СЊ
+        iFile >> ch; // РќРѕР»СЊ
         iFile >> substances[i]->enthalpyOfFormation;
         iFile >> substances[i]->molecularWeight;
         iFile >> substances[i]->nTemperatureRanges;
@@ -86,8 +86,8 @@ void Mixture::readFileOfSubstances(const char *filename)
             }
         }
 
-        iFile >> ch; // Ноль
-        iFile >> ch; // Ноль
+        iFile >> ch; // РќРѕР»СЊ
+        iFile >> ch; // РќРѕР»СЊ
         iFile >> word; // User
     }
 }
@@ -105,9 +105,9 @@ void Mixture::readFileOfReactions(const char *filename)
 
     for (int i = 0; i < nReactions; i++) {
         iFile >> reactions[i].typeOfReaction;
-        iFile >> ch; // Ноль
-        iFile >> reactions[i].nTemperatureRanges; // Количество температурных интервалов
-        iFile >> ch; // Единица
+        iFile >> ch; // РќРѕР»СЊ
+        iFile >> reactions[i].nTemperatureRanges; // РљРѕР»РёС‡РµСЃС‚РІРѕ С‚РµРјРїРµСЂР°С‚СѓСЂРЅС‹С… РёРЅС‚РµСЂРІР°Р»РѕРІ
+        iFile >> ch; // Р•РґРёРЅРёС†Р°
 
 		reactions[i].allocateMemoryForParameters();
 
@@ -275,7 +275,7 @@ void Mixture::fillReagents()
 
         for (int j = 0; j < reactions[i].nReagents; j++) {
             if (subs[j] == "M") {
-                reactions[i].reagents[j] = -1; // Признак вещества M
+                reactions[i].reagents[j] = -1; // РџСЂРёР·РЅР°Рє РІРµС‰РµСЃС‚РІР° M
 				reactions[i].withThirdBody = true;
 				continue;
             }
@@ -312,7 +312,7 @@ void Mixture::fillProducts()
 
         for (int j = 0; j < reactions[i].nProducts; j++) {
             if (subs[j] == "M") {
-                reactions[i].products[j] = -1; // Признак вещества M
+                reactions[i].products[j] = -1; // РџСЂРёР·РЅР°Рє РІРµС‰РµСЃС‚РІР° M
                 continue;
             }
             for (int jj = 0; jj < nSubstances; jj++) {
@@ -424,7 +424,7 @@ RealType Mixture::calculateFullEnergy(RealType pressure, RealType volume)
     RealType sumOfFractions = 0.0;
 
     for (int i = 0; i < nSubstances; i++) {
-        // Коэффициент 1.0e6 для перевода из кДж / моль в Дж / кмоль.
+        // РљРѕСЌС„С„РёС†РёРµРЅС‚ 1.0e6 РґР»СЏ РїРµСЂРµРІРѕРґР° РёР· РєР”Р¶ / РјРѕР»СЊ РІ Р”Р¶ / РєРјРѕР»СЊ.
         energy += (calculateSubstanceEnthalpy(i, temperature) +
             substances[i]->enthalpyOfFormation * 1.0e6) *
             volumeFractions[i];
@@ -452,18 +452,18 @@ RealType Mixture::calculateTemperature()
         sumConc += concentrations[i];
     }
 
-    // Теплоёмкость в Дж / (см**3 * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (СЃРј**3 * Рљ)
     mixtureHeatCapacity = calculateCp(temperature);
     
-    // Теплоёмкость в Дж / (кг * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (РєРі * Рљ)
     mixtureHeatCapacityJOverKgK = mixtureHeatCapacity * 1.0e6 * volume;
     
-    // Теплоёмкость в Дж / (кмоль * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (РєРјРѕР»СЊ * Рљ)
     mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
         molecularWeight;
 
     for (int i = 0; i < nSubstances; i++) {
-        // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
+        // РљРѕСЌС„С„РёС†РёРµРЅС‚ 1.0e6 РґР»СЏ РїРµСЂРµРІРѕРґР° РёР· РєР”Р¶/РјРѕР»СЊ РІ Р”Р¶/РєРјРѕР»СЊ.
         mixEnthalpyOfFormation += concentrations[i] * 
             substances[i]->enthalpyOfFormation * 1.0e6;
     }
@@ -474,10 +474,10 @@ RealType Mixture::calculateTemperature()
     }
     mixEnthalpy /= sumConc;
     mixEnthalpy += mixEnthalpyOfFormation;
-    mixEnthalpy /= molecularWeight; // Переводим в Дж / кг.
+    mixEnthalpy /= molecularWeight; // РџРµСЂРµРІРѕРґРёРј РІ Р”Р¶ / РєРі.
     energy1 =  - mixtureHeatCapacityJOverKgK * temperature + mixEnthalpy;
 
-    // Считаем выражение в знаменателе.
+    // РЎС‡РёС‚Р°РµРј РІС‹СЂР°Р¶РµРЅРёРµ РІ Р·РЅР°РјРµРЅР°С‚РµР»Рµ.
     for (int i = 0; i < nSubstances; i++) {
         energy2 += concentrations[i] * 
             (R_J_OVER_KMOL_K / substances[i]->molecularWeight);
@@ -489,18 +489,18 @@ RealType Mixture::calculateTemperature()
 
 RealType Mixture::calculateInitialTemperature()
 {
-    // Номер итерации.
+    // РќРѕРјРµСЂ РёС‚РµСЂР°С†РёРё.
     int k = 0;
-    // Максимальное количество итераций.
+    // РњР°РєСЃРёРјР°Р»СЊРЅРѕРµ РєРѕР»РёС‡РµСЃС‚РІРѕ РёС‚РµСЂР°С†РёР№.
     const int maxIterations = 20;
-    // Точность нахождения температуры.
+    // РўРѕС‡РЅРѕСЃС‚СЊ РЅР°С…РѕР¶РґРµРЅРёСЏ С‚РµРјРїРµСЂР°С‚СѓСЂС‹.
     RealType precision = 1e-4;
-    // Задаем начальное приближение.
+    // Р—Р°РґР°РµРј РЅР°С‡Р°Р»СЊРЅРѕРµ РїСЂРёР±Р»РёР¶РµРЅРёРµ.
     RealType t = 2000;
-    // Уравнение, связывающее удельную внутреннюю энергию
-    // с удельной энтальпией.
+    // РЈСЂР°РІРЅРµРЅРёРµ, СЃРІСЏР·С‹РІР°СЋС‰РµРµ СѓРґРµР»СЊРЅСѓСЋ РІРЅСѓС‚СЂРµРЅРЅСЋСЋ СЌРЅРµСЂРіРёСЋ
+    // СЃ СѓРґРµР»СЊРЅРѕР№ СЌРЅС‚Р°Р»СЊРїРёРµР№.
     RealType func = calculateMixtureEnthalpy(t) - R_J_OVER_KMOL_K * t / molecularWeight - fullEnergy;
-    // Производная по температуре от функции func.
+    // РџСЂРѕРёР·РІРѕРґРЅР°СЏ РїРѕ С‚РµРјРїРµСЂР°С‚СѓСЂРµ РѕС‚ С„СѓРЅРєС†РёРё func.
     RealType dfunc;
 
     while (abs(func) >= precision) {
@@ -533,7 +533,7 @@ void Mixture::setStateWithURhoX(RealType internalEnergy, RealType density,
                                 RealType *volFracts)
 {
     volume = 1.0 / density;
-    fullEnergy = internalEnergy; // Дж кг-1
+    fullEnergy = internalEnergy; // Р”Р¶ РєРі-1
 
     RealType sumFractions = 0.0;
     for (int i = 0; i < nSubstances; ++i) {
@@ -557,7 +557,7 @@ void Mixture::setStateWithURhoX(RealType internalEnergy, RealType density,
     pressure    = (R_J_OVER_KMOL_K * temperature) / (molecularWeight * volume);
 
     RealType densityKmoleOverM3 = pressure / 
-        (temperature * R_J_OVER_KMOL_K); // кмоль м-3
+        (temperature * R_J_OVER_KMOL_K); // РєРјРѕР»СЊ Рј-3
 
     for (int i = 0; i < nSubstances; i++) {
         concentrations[i] = 1.0e-3 * densityKmoleOverM3 * 
@@ -576,16 +576,16 @@ RealType Mixture::calculateMixtureCp(RealType t)
     RealType mixtureHeatCapacity = 0.0;
     //RealType mixtureHeatCapacityJOverKgK;
 
-    // Теплоёмкость в Дж / (кг * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (РєРі * Рљ)
     for (int i = 0; i < nSubstances; i++) {
         mixtureHeatCapacity += y_[i] * calculateSubstanceCp(i, t);
     }
     
-    // Теплоёмкость в Дж / (кг * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (РєРі * Рљ)
     //mixtureHeatCapacityJOverKgK = mixtureHeatCapacity / molecularWeight;
     //mixtureHeatCapacityJOverKgK = mixtureHeatCapacity;
     
-    // Теплоёмкость в Дж / (кмоль * К)
+    // РўРµРїР»РѕС‘РјРєРѕСЃС‚СЊ РІ Р”Р¶ / (РєРјРѕР»СЊ * Рљ)
     // mixtureHeatCapacityJOverKmoleK = mixtureHeatCapacityJOverKgK * 
     //    molecularWeight;
 
@@ -598,7 +598,7 @@ RealType Mixture::calculateMixtureEnthalpy(RealType t)
     RealType mixEnthalpy = 0.0;
 
     //for (int i = 0; i < nSubstances; i++) {
-    //    // Коэффициент 1.0e6 для перевода из кДж/моль в Дж/кмоль.
+    //    // РљРѕСЌС„С„РёС†РёРµРЅС‚ 1.0e6 РґР»СЏ РїРµСЂРµРІРѕРґР° РёР· РєР”Р¶/РјРѕР»СЊ РІ Р”Р¶/РєРјРѕР»СЊ.
     //    mixEnthalpyOfFormation += y_[i] * 
     //        substances[i]->enthalpyOfFormation * 1.0e6 /
     //        substances[i]->molecularWeight;
@@ -609,7 +609,7 @@ RealType Mixture::calculateMixtureEnthalpy(RealType t)
     }
     
     //mixEnthalpy += mixEnthalpyOfFormation;
-    //mixEnthalpy /= molecularWeight; // Переводим в Дж / кг.
+    //mixEnthalpy /= molecularWeight; // РџРµСЂРµРІРѕРґРёРј РІ Р”Р¶ / РєРі.
 
     return mixEnthalpy;
 }
@@ -635,7 +635,7 @@ void Mixture::setConcentrations(RealType t, RealType density)
     pressure = (R_J_OVER_KMOL_K * temperature) / (molecularWeight * volume);
 
     RealType densityKmoleOverM3 = pressure / 
-        (temperature * R_J_OVER_KMOL_K); // кмоль м-3
+        (temperature * R_J_OVER_KMOL_K); // РєРјРѕР»СЊ Рј-3
 
     for (int i = 0; i < nSubstances; i++) {
         concentrations[i] = 1.0e-3 * densityKmoleOverM3 * 
@@ -693,7 +693,7 @@ void Mixture::setStateWithTPX(RealType t, RealType p, RealType *x)
     volume = (R_J_OVER_KMOL_K * temperature) / (molecularWeight * pressure);
 
     RealType densityKmoleOverM3 = pressure / 
-        (temperature * R_J_OVER_KMOL_K); // кмоль м-3
+        (temperature * R_J_OVER_KMOL_K); // РєРјРѕР»СЊ Рј-3
 
     for (int i = 0; i < nSubstances; i++) {
         concentrations[i] = 1.0e-3 * densityKmoleOverM3 * 

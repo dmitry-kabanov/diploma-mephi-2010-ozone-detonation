@@ -73,12 +73,12 @@ long double calc_shock_wave_velocity(long double p, long double u,
 {
     long double a, d;
 
-    // Правая волна является ударной.
+    // РџСЂР°РІР°СЏ РІРѕР»РЅР° СЏРІР»СЏРµС‚СЃСЏ СѓРґР°СЂРЅРѕР№.
     if (p >= p_right) {
         a = calc_a(p, p_right, rho_right, gamma);
         d = u_right + a / rho_right;
     }
-    // Левая волна является ударной.
+    // Р›РµРІР°СЏ РІРѕР»РЅР° СЏРІР»СЏРµС‚СЃСЏ СѓРґР°СЂРЅРѕР№.
     else if (p >= p_left) {
         a = calc_a(p, p_left, rho_left, gamma);
         d = u_left - a / rho_left;
@@ -152,7 +152,7 @@ long double calc_p_contact(long double p_left, long double p_right,
 		(u_left - u_right) * rho_left * c_left * rho_right * c_right) / 
 		(rho_left * c_left + rho_right * c_right);
 
-    // Если решаем в акустическом приближении.
+    // Р•СЃР»Рё СЂРµС€Р°РµРј РІ Р°РєСѓСЃС‚РёС‡РµСЃРєРѕРј РїСЂРёР±Р»РёР¶РµРЅРёРё.
     if (EXACT_RIEMANN_SOLVER == false) {
         long double u;
         u = (p_left - p_right + c_left * rho_left * u_left

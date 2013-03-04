@@ -1,12 +1,12 @@
 /**
  * @file
  *
- * @author  Кабанов Дмитрий <kabanovdmitry@gmail.com
+ * @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com
  * @version %I%
  *
  * @section DESCRIPTION
  *
- * Реализация класса Reaction.
+ * Р РµР°Р»РёР·Р°С†РёСЏ РєР»Р°СЃСЃР° Reaction.
  */
 #include "Reaction.h"
 

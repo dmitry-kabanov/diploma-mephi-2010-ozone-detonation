@@ -64,9 +64,9 @@ void init_thermodynamic_parameters(RealType *internal_energy,
     energy[0]          = 0.0;
     u_energy[0]        = 0.0;
 
-    // Температура в ячейке, К.
+    // РўРµРјРїРµСЂР°С‚СѓСЂР° РІ СЏС‡РµР№РєРµ, Рљ.
     RealType t;
-    // Молекулярный вес смеси, кг кмоль-1.
+    // РњРѕР»РµРєСѓР»СЏСЂРЅС‹Р№ РІРµСЃ СЃРјРµСЃРё, РєРі РєРјРѕР»СЊ-1.
     RealType mw;
 
     for (int i = 1; i <= N; i++) {

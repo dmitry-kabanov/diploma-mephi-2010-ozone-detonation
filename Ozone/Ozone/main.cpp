@@ -1,11 +1,11 @@
 /**
  * @file
- * @author Кабанов Дмитрий <kabanovdmitry@gmail.com
+ * @author РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com
  * @version $Id$
  *
  * @section DESCRIPTION
  *
- * Главный файл проекта Ozone.
+ * Р“Р»Р°РІРЅС‹Р№ С„Р°Р№Р» РїСЂРѕРµРєС‚Р° Ozone.
  */
 #include "main.h"
 #include <ctime>

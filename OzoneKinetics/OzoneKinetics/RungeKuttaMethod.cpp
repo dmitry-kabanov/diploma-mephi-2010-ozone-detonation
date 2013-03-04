@@ -36,7 +36,7 @@ RungeKuttaMethod::~RungeKuttaMethod()
 
 void RungeKuttaMethod::performIntegration()
 {
-    // Относительное изменение концентрации O за один временной шаг.
+    // РћС‚РЅРѕСЃРёС‚РµР»СЊРЅРѕРµ РёР·РјРµРЅРµРЅРёРµ РєРѕРЅС†РµРЅС‚СЂР°С†РёРё O Р·Р° РѕРґРёРЅ РІСЂРµРјРµРЅРЅРѕР№ С€Р°Рі.
     RealType alpha = 0.005;
     RealType k1, k2, k3, k4;
     RealType q1, q2, q3, q4;
@@ -46,7 +46,7 @@ void RungeKuttaMethod::performIntegration()
     printHeadingToFile();
     printToFile();
 
-    // Производим интегрирование.
+    // РџСЂРѕРёР·РІРѕРґРёРј РёРЅС‚РµРіСЂРёСЂРѕРІР°РЅРёРµ.
     for (int i = 0; i < fullTime; i++) {
         k1 = rightSideForO(time,
             mixture->concentrations[0], 
@@ -225,7 +225,7 @@ RealType RungeKuttaMethod::calculateRateForForwardReaction(int i)
     RealType k;
     RealType t = mixture->temperature;
 
-    // Универсальная газовая постоянная, ккал / (моль*К).
+    // РЈРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ РіР°Р·РѕРІР°СЏ РїРѕСЃС‚РѕСЏРЅРЅР°СЏ, РєРєР°Р» / (РјРѕР»СЊ*Рљ).
     const RealType r = 0.001985846;
 
     k = exp(log(t) * mixture->reactions[i].n - 
@@ -238,7 +238,7 @@ RealType RungeKuttaMethod::calculateRateForForwardReaction(int i)
 RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, RealType *conc)
 {
     RealType t = mixture->temperature;
-    // Тепловой эффект реакции.
+    // РўРµРїР»РѕРІРѕР№ СЌС„С„РµРєС‚ СЂРµР°РєС†РёРё.
     RealType q = 0.0;
     RealType multProducts = 1.0;
     RealType multReagents = 1.0;
@@ -255,7 +255,7 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, Real
 
     for (int j = 0; j < mixture->reactions[i].nProducts; j++) {
         substanceNumber = mixture->reactions[i].products[j];
-        // Проверяем, что вещество не является веществом "М".
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІРµС‰РµСЃС‚РІРѕ РЅРµ СЏРІР»СЏРµС‚СЃСЏ РІРµС‰РµСЃС‚РІРѕРј "Рњ".
         if (substanceNumber == -1) {
             continue;
         }
@@ -266,7 +266,7 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, Real
 
     for (int j = 0; j < mixture->reactions[i].nReagents; j++) {
         substanceNumber = mixture->reactions[i].reagents[j];
-        // Проверяем, что вещество не является веществом "М".
+        // РџСЂРѕРІРµСЂСЏРµРј, С‡С‚Рѕ РІРµС‰РµСЃС‚РІРѕ РЅРµ СЏРІР»СЏРµС‚СЃСЏ РІРµС‰РµСЃС‚РІРѕРј "Рњ".
         if (substanceNumber == -1) {
             continue;
         }
@@ -275,7 +275,7 @@ RealType RungeKuttaMethod::calculateRateForBackReaction(int i, RealType kf, Real
         nMoles--;
     }
 
-    // Константа равновесия.
+    // РљРѕРЅСЃС‚Р°РЅС‚Р° СЂР°РІРЅРѕРІРµСЃРёСЏ.
     RealType kp;
     kp  = exp(-q / (mixture->R_J_OVER_MOL_K * t));
     kp *= exp(-log(10 * mixture->K_BOLTZMANN * t) * nMoles);

@@ -17,7 +17,7 @@ int main()
     ifstream configFile("Config.txt");
 
     configFile >> paramName >> initialPressure;
-    initialPressure *= 101325.0; // Ïåðåâîäèì èç ôèç. àòìîñôåð â ïàñêàëè.
+    initialPressure *= 101325.0; // ÐŸÐµÑ€ÐµÐ²Ð¾Ð´Ð¸Ð¼ Ð¸Ð· Ñ„Ð¸Ð·. Ð°Ñ‚Ð¼Ð¾ÑÑ„ÐµÑ€ Ð² Ð¿Ð°ÑÐºÐ°Ð»Ð¸.
     configFile >> paramName >> initialTemperature;
     configFile >> paramName >> initialTimeStep;
     configFile >> paramName >> fullTime;

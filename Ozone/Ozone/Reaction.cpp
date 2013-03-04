@@ -1,12 +1,12 @@
 /**
  * @file
  *
- * @author  Кабанов Дмитрий <kabanovdmitry@gmail.com
+ * @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com
  * @version %I%
  *
  * @section DESCRIPTION
  *
- * Реализация класса Reaction.
+ * Р РµР°Р»РёР·Р°С†РёСЏ РєР»Р°СЃСЃР° Reaction.
  */
 #include "Reaction.h"
 #include <cmath>
@@ -52,7 +52,7 @@ void Reaction::allocateMemoryForCollisionEfficiency(int n)
 RealType Reaction::calculateConstantRate(RealType t)
 {
 	RealType k;
-	// TODO: сделать, чтоб возможно было выбрать несколько температурных диапазонов.
+	// TODO: СЃРґРµР»Р°С‚СЊ, С‡С‚РѕР± РІРѕР·РјРѕР¶РЅРѕ Р±С‹Р»Рѕ РІС‹Р±СЂР°С‚СЊ РЅРµСЃРєРѕР»СЊРєРѕ С‚РµРјРїРµСЂР°С‚СѓСЂРЅС‹С… РґРёР°РїР°Р·РѕРЅРѕРІ.
 	int j = 0;
 
 	k = exp(log(t) * n[j] - 
@@ -92,18 +92,18 @@ RealType Reaction::calculateReactionRate(double *Y,
 		nMoles++;
 	}
 
-	// Вычисляем константу равновесия по концентрации.
+	// Р’С‹С‡РёСЃР»СЏРµРј РєРѕРЅСЃС‚Р°РЅС‚Сѓ СЂР°РІРЅРѕРІРµСЃРёСЏ РїРѕ РєРѕРЅС†РµРЅС‚СЂР°С†РёРё.
 	kc  = exp(-q / (R_J_OVER_KMOL_K * t));
 	kc *= exp(-log(10 * K_BOLTZMANN * t) * nMoles);
 
 	if (direction == 0) {
-		// Реакция обратимая.
+		// Р РµР°РєС†РёСЏ РѕР±СЂР°С‚РёРјР°СЏ.
 		//kr = kf / kc;
 		reactionRate_ = kf * 
 			(multiplicationOfReagents - multiplicationOfProducts / kc);
 	}
 	else if (direction == 1) {
-		// Реакция необратимая.
+		// Р РµР°РєС†РёСЏ РЅРµРѕР±СЂР°С‚РёРјР°СЏ.
 		reactionRate_ = kf * multiplicationOfReagents;
 	}
 	else {

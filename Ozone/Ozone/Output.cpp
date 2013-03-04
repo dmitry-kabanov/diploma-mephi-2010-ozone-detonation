@@ -1,12 +1,12 @@
 /**
 * @file
 *
-* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
 * @version $Id$
 *
 * @section DESCRIPTION
 *
-* Реализует функции класса Output.
+* Р РµР°Р»РёР·СѓРµС‚ С„СѓРЅРєС†РёРё РєР»Р°СЃСЃР° Output.
 */
 #include "Output.h"
 #include <iostream>
@@ -53,7 +53,7 @@ void Output::plotData(int timeStep, GodunovKolganMethod &gkm)
 {
 	int num_digits;
 	char time[32];
-	// TODO: добавить проверку на существование каталога.
+	// TODO: РґРѕР±Р°РІРёС‚СЊ РїСЂРѕРІРµСЂРєСѓ РЅР° СЃСѓС‰РµСЃС‚РІРѕРІР°РЅРёРµ РєР°С‚Р°Р»РѕРіР°.
 	char filename[] = "\\data_";
 	string fullname(path_);
 

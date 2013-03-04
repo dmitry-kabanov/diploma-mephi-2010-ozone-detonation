@@ -72,12 +72,12 @@ long double calc_shock_wave_velocity(long double p, long double u,
 {
     long double a, d;
 
-    // Правая волна является ударной.
+    // РџСЂР°РІР°СЏ РІРѕР»РЅР° СЏРІР»СЏРµС‚СЃСЏ СѓРґР°СЂРЅРѕР№.
     if (p >= p_right) {
         a = calc_a(p, p_right, rho_right);
         d = u_right + a / rho_right;
     }
-    // Левая волна является ударной.
+    // Р›РµРІР°СЏ РІРѕР»РЅР° СЏРІР»СЏРµС‚СЃСЏ СѓРґР°СЂРЅРѕР№.
     else if (p >= p_left) {
         a = calc_a(p, p_left, rho_left);
         d = u_left - a / rho_left;
@@ -180,29 +180,29 @@ long double calc_rho_contact_right(int config,
 
     switch (config) {
         case CONFIG_SHOCK_WAVES:
-            // Вправо бежит ударная волна.
+            // Р’РїСЂР°РІРѕ Р±РµР¶РёС‚ СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°.
             rho_contact_right = rho_right * a_right /
                 (a_right + rho_right * (u_right - u));
             break;
         case CONFIG_SHOCK_AND_RAREFACTION_WAVES:
-            // Вправо бежит ударная волна.
+            // Р’РїСЂР°РІРѕ Р±РµР¶РёС‚ СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°.
             if (p_left > p_right) {
                 rho_contact_right = rho_right * a_right /
                     (a_right + rho_right * (u_right - u));
             }
-            // Вправо бежит волна разрежения.
+            // Р’РїСЂР°РІРѕ Р±РµР¶РёС‚ РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ.
             else {
                 rho_contact_right = GAMMA * (p + p0) /
                     pow(c_right - (GAMMA - 1) * (u_right - u) / 2.0, 2);
             }
             break;
         case CONFIG_RAREFACTION_WAVES:
-            // Вправо бежит волна разрежения.
+            // Р’РїСЂР°РІРѕ Р±РµР¶РёС‚ РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ.
             rho_contact_right = GAMMA * (p + p0) /
                     pow(c_right - (GAMMA - 1) * (u_right - u) / 2.0, 2);
             break;
         case CONFIG_VACUUM:
-            // Истечение в вакуум.
+            // РСЃС‚РµС‡РµРЅРёРµ РІ РІР°РєСѓСѓРј.
             rho_contact_right = 0.0;
             break;
     }
@@ -222,29 +222,29 @@ long double calc_rho_contact_left(int config,
 
     switch (config) {
         case CONFIG_SHOCK_WAVES:
-            // Влево бежит ударная волна.
+            // Р’Р»РµРІРѕ Р±РµР¶РёС‚ СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°.
             rho_contact_left = rho_left * a_left /
                 (a_left - rho_left * (u_left - u));
             break;
         case CONFIG_SHOCK_AND_RAREFACTION_WAVES:
-            // Влево бежит ударная волна
+            // Р’Р»РµРІРѕ Р±РµР¶РёС‚ СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°
             if (p_left <= p_right) {
                 rho_contact_left = rho_left * a_left /
                     (a_left - rho_left * (u_left - u));
             }
-            // Влево бежит волна разрежения.
+            // Р’Р»РµРІРѕ Р±РµР¶РёС‚ РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ.
             else {
                 rho_contact_left = GAMMA * (p + p0) /
                     pow(c_left + (GAMMA - 1) * (u_left - u) / 2.0, 2);
             }
             break;
         case CONFIG_RAREFACTION_WAVES:
-            // Влево бежит волна разрежения.
+            // Р’Р»РµРІРѕ Р±РµР¶РёС‚ РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ.
             rho_contact_left = GAMMA * (p + p0) /
                     pow(c_left + (GAMMA - 1) * (u_left - u) / 2.0, 2);
             break;
         case CONFIG_VACUUM:
-            // Истечение в вакуум.
+            // РСЃС‚РµС‡РµРЅРёРµ РІ РІР°РєСѓСѓРј.
             rho_contact_left = 0.0;
             break;
     }
@@ -254,7 +254,7 @@ long double calc_rho_contact_left(int config,
 
 
 /**
- * Уравнение для ударного скачка.
+ * РЈСЂР°РІРЅРµРЅРёРµ РґР»СЏ СѓРґР°СЂРЅРѕРіРѕ СЃРєР°С‡РєР°.
  */
 long double calc_shock_wave(long double p2, long double p1, long double rho1, long double u1, char direction)
 {
@@ -262,11 +262,11 @@ long double calc_shock_wave(long double p2, long double p1, long double rho1, lo
 
     value = (p2 - p1) * sqrt((2*(1/rho1)) / ((GAMMA + 1) * p2 + (GAMMA - 1) * p1));
 
-    // Ударный скачок бежит вправо.
+    // РЈРґР°СЂРЅС‹Р№ СЃРєР°С‡РѕРє Р±РµР¶РёС‚ РІРїСЂР°РІРѕ.
     if (direction == 'r') {
         u2 = u1 + value;
     }
-    // Ударный скачок бежит влево.
+    // РЈРґР°СЂРЅС‹Р№ СЃРєР°С‡РѕРє Р±РµР¶РёС‚ РІР»РµРІРѕ.
     else {
         u2 = u1 - value;
     }
@@ -275,25 +275,25 @@ long double calc_shock_wave(long double p2, long double p1, long double rho1, lo
 }
 
 /**
- * Уравнение для волны разрежения.
- * p1        - начальное давление
- * rho1      - начальная плотность
- * u1        - начальная скорость
- * u         - скорость контактного разрыва
- * direction - направление движения волны
+ * РЈСЂР°РІРЅРµРЅРёРµ РґР»СЏ РІРѕР»РЅС‹ СЂР°Р·СЂРµР¶РµРЅРёСЏ.
+ * p1        - РЅР°С‡Р°Р»СЊРЅРѕРµ РґР°РІР»РµРЅРёРµ
+ * rho1      - РЅР°С‡Р°Р»СЊРЅР°СЏ РїР»РѕС‚РЅРѕСЃС‚СЊ
+ * u1        - РЅР°С‡Р°Р»СЊРЅР°СЏ СЃРєРѕСЂРѕСЃС‚СЊ
+ * u         - СЃРєРѕСЂРѕСЃС‚СЊ РєРѕРЅС‚Р°РєС‚РЅРѕРіРѕ СЂР°Р·СЂС‹РІР°
+ * direction - РЅР°РїСЂР°РІР»РµРЅРёРµ РґРІРёР¶РµРЅРёСЏ РІРѕР»РЅС‹
  */
 long double calc_rarefaction_wave(long double p1, long double rho1, long double u1, long double u, char direction)
 {
     long double c1, p;
 
-    // Считаем скорость звука.
+    // РЎС‡РёС‚Р°РµРј СЃРєРѕСЂРѕСЃС‚СЊ Р·РІСѓРєР°.
     c1 = calc_c(p1, rho1);
 
-    // Волна разрежения бежит направо.
+    // Р’РѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ Р±РµР¶РёС‚ РЅР°РїСЂР°РІРѕ.
     if (direction == 'r') {
         p = p1 * pow(1 + (GAMMA - 1) * (u - u1) / (2 * c1), (2 * GAMMA) / (GAMMA - 1));
     }
-    // Волная разрежения бежит налево.
+    // Р’РѕР»РЅР°СЏ СЂР°Р·СЂРµР¶РµРЅРёСЏ Р±РµР¶РёС‚ РЅР°Р»РµРІРѕ.
     else {
         p = p1 * pow(1 - (GAMMA - 1) * (u - u1) / (2 * c1), (2 * GAMMA) / (GAMMA - 1));
     }
@@ -389,21 +389,21 @@ long double calc_p_contact(long double p_left, long double p_right,
 
     //switch (config) {
     //    case CONFIG_SHOCK_WAVES:
-    //        printf("Вправо и влево распространяются ударные волны.\n");
+    //        printf("Р’РїСЂР°РІРѕ Рё РІР»РµРІРѕ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏСЋС‚СЃСЏ СѓРґР°СЂРЅС‹Рµ РІРѕР»РЅС‹.\n");
     //        break;
     //    case CONFIG_SHOCK_AND_RAREFACTION_WAVES:
     //        if (p_left <= p_right) {
-    //            printf("Влево - ударная волна, вправо - волна разрежения.\n");
+    //            printf("Р’Р»РµРІРѕ - СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°, РІРїСЂР°РІРѕ - РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ.\n");
     //        }
     //        else {
-    //            printf("Влево - волна разрежения, вправо - ударная волна.\n");
+    //            printf("Р’Р»РµРІРѕ - РІРѕР»РЅР° СЂР°Р·СЂРµР¶РµРЅРёСЏ, РІРїСЂР°РІРѕ - СѓРґР°СЂРЅР°СЏ РІРѕР»РЅР°.\n");
     //        }
     //        break;
     //    case CONFIG_RAREFACTION_WAVES:
-    //        printf("Вправо и влево распространяются волны разрежения.\n");
+    //        printf("Р’РїСЂР°РІРѕ Рё РІР»РµРІРѕ СЂР°СЃРїСЂРѕСЃС‚СЂР°РЅСЏСЋС‚СЃСЏ РІРѕР»РЅС‹ СЂР°Р·СЂРµР¶РµРЅРёСЏ.\n");
     //        break;
     //    case CONFIG_VACUUM:
-    //        printf("Истечение в вакуум. Решения нет.\n");
+    //        printf("РСЃС‚РµС‡РµРЅРёРµ РІ РІР°РєСѓСѓРј. Р РµС€РµРЅРёСЏ РЅРµС‚.\n");
     //        return 0;
     //        break;
     //}
@@ -415,7 +415,7 @@ long double calc_p_contact(long double p_left, long double p_right,
 		(u_left - u_right) * rho_left * c_left * rho_right * c_right) / 
 		(rho_left * c_left + rho_right * c_right);
 
-    // Если решаем в акустическом приближении.
+    // Р•СЃР»Рё СЂРµС€Р°РµРј РІ Р°РєСѓСЃС‚РёС‡РµСЃРєРѕРј РїСЂРёР±Р»РёР¶РµРЅРёРё.
     if (EXACT_RIEMANN_SOLVER == false) {
         long double u;
         u = (p_left - p_right + c_left * rho_left * u_left
