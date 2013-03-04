@@ -1,12 +1,12 @@
 /**
 * @file
 *
-* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
 * @version %I%
 *
 * @section DESCRIPTION
 *
-* Класс поршня.
+* РљР»Р°СЃСЃ РїРѕСЂС€РЅСЏ.
 */
 #ifndef Piston_h__
 #define Piston_h__

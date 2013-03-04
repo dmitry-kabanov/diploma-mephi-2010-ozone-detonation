@@ -2,7 +2,7 @@
 #define FUNC_THERMODYNAMICS_H
 
 /**
- * Возвращает значение температуры.
+ * Р’РѕР·РІСЂР°С‰Р°РµС‚ Р·РЅР°С‡РµРЅРёРµ С‚РµРјРїРµСЂР°С‚СѓСЂС‹.
  */
 long double calc_temperature(
     long double internal_energy,

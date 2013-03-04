@@ -1,12 +1,12 @@
 /**
 * @file
 *
-* @author  Кабанов Дмитрий <kabanovdmitry@gmail.com>
+* @author  РљР°Р±Р°РЅРѕРІ Р”РјРёС‚СЂРёР№ <kabanovdmitry@gmail.com>
 * @version $Id$
 *
 * @section DESCRIPTION
 *
-* Объявляет класс Output.
+* РћР±СЉСЏРІР»СЏРµС‚ РєР»Р°СЃСЃ Output.
 */
 #ifndef OUTPUT_H
 #define OUTPUT_H
@@ -20,34 +20,34 @@
 class Mixture;
 
 /**
- * Вывод данных в файл.
+ * Р’С‹РІРѕРґ РґР°РЅРЅС‹С… РІ С„Р°Р№Р».
  */
 class Output
 {
 public:
 	/**
-	 * Конструктор класса.
+	 * РљРѕРЅСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°.
 	 *
-	 * @param mix		газовая смесь
-	 * @param format	формат выходного файла
-	 * @param path		путь к каталогу выходных файлов
+	 * @param mix		РіР°Р·РѕРІР°СЏ СЃРјРµСЃСЊ
+	 * @param format	С„РѕСЂРјР°С‚ РІС‹С…РѕРґРЅРѕРіРѕ С„Р°Р№Р»Р°
+	 * @param path		РїСѓС‚СЊ Рє РєР°С‚Р°Р»РѕРіСѓ РІС‹С…РѕРґРЅС‹С… С„Р°Р№Р»РѕРІ
 	 */
 	Output(const Mixture &mix, const std::string &format, std::string path);
 	/**
-	 * Деструктор класса.
+	 * Р”РµСЃС‚СЂСѓРєС‚РѕСЂ РєР»Р°СЃСЃР°.
 	 */
 	~Output();
 	/**
-	 * Выводит данные в файл.
+	 * Р’С‹РІРѕРґРёС‚ РґР°РЅРЅС‹Рµ РІ С„Р°Р№Р».
 	 *
-	 * @param timeStep	временной шаг 
-	 * @param gkm		объект, данные которого выводятся в файл
+	 * @param timeStep	РІСЂРµРјРµРЅРЅРѕР№ С€Р°Рі 
+	 * @param gkm		РѕР±СЉРµРєС‚, РґР°РЅРЅС‹Рµ РєРѕС‚РѕСЂРѕРіРѕ РІС‹РІРѕРґСЏС‚СЃСЏ РІ С„Р°Р№Р»
 	 */
 	void plotData(int timeStep, GodunovKolganMethod &gkm);
 	/**
-	 * Выводит заголовки столбцов данных в файл.
+	 * Р’С‹РІРѕРґРёС‚ Р·Р°РіРѕР»РѕРІРєРё СЃС‚РѕР»Р±С†РѕРІ РґР°РЅРЅС‹С… РІ С„Р°Р№Р».
 	 *
-	 * @param outFile выходной файл.
+	 * @param outFile РІС‹С…РѕРґРЅРѕР№ С„Р°Р№Р».
 	 */
 	void writeDataLabels(std::ofstream &outFile);
 

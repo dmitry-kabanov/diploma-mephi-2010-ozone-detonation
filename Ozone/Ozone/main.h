@@ -3,11 +3,11 @@
 
 //#include <cfloat>
 //
-//// Эти команды включают режим, при котором выбрасывается исключение, 
-//// когда переменная принимает значение NaN (Not a Number),
-//// например, при вычислении квадратного корня из отрицательного числа.
-//// см. Press W. H., et al. Numerical Recipes, 3rd ed., а также 
-//// ANSI/IEEE Std 754–1985: IEEE Standard for Binary Floating-Point Numbers.
+//// Р­С‚Рё РєРѕРјР°РЅРґС‹ РІРєР»СЋС‡Р°СЋС‚ СЂРµР¶РёРј, РїСЂРё РєРѕС‚РѕСЂРѕРј РІС‹Р±СЂР°СЃС‹РІР°РµС‚СЃСЏ РёСЃРєР»СЋС‡РµРЅРёРµ, 
+//// РєРѕРіРґР° РїРµСЂРµРјРµРЅРЅР°СЏ РїСЂРёРЅРёРјР°РµС‚ Р·РЅР°С‡РµРЅРёРµ NaN (Not a Number),
+//// РЅР°РїСЂРёРјРµСЂ, РїСЂРё РІС‹С‡РёСЃР»РµРЅРёРё РєРІР°РґСЂР°С‚РЅРѕРіРѕ РєРѕСЂРЅСЏ РёР· РѕС‚СЂРёС†Р°С‚РµР»СЊРЅРѕРіРѕ С‡РёСЃР»Р°.
+//// СЃРј. Press W. H., et al. Numerical Recipes, 3rd ed., Р° С‚Р°РєР¶Рµ 
+//// ANSI/IEEE Std 754вЂ“1985: IEEE Standard for Binary Floating-Point Numbers.
 //int cw = _controlfp_s(0, 0, 0);
 //cw &= ~(EM_INVALID | EM_OVERFLOW | EM_ZERODIVIDE );
 //_controlfp(cw,MCW_EM);
