@@ -1,8 +1,0 @@
-pressure		   64
-temperature		   1200
-timeStep		   1.0e-10
-fullTime		   1000
-timeStepForOutput  10 
-fileOfSubstances   Substances.txt
-fileOfReactions    Reactions.txt
-fileOfFractions    VolumeFractions.txt
